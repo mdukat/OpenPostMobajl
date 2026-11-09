@@ -1,0 +1,25 @@
+# Build output
+/out/
+
+# Generated local toolchain
+/tools/root/
+/tools/android-sdk/
+/tools/nsroot/
+/tools/debug.keystore
+/tools/release.keystore
+
+# Package cache / offline mirror (back this up separately)
+/mirror/
+
+# Downloaded QR library (bootstrap.sh installs it here)
+/libs/
+
+# Local credentials / cached data (never commit)
+auth.json
+parcels.json
+*.tmp
+
+# Misc
+*.apk
+*.log
+release-keystore.properties
