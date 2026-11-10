@@ -94,7 +94,18 @@ Each list row shows, in order:
 <last 6 of shipmentNumber>  ·  <statusGroup>  ·  <pickup point name>  ·  <sender name>  ›
 ```
 
-Tapping a row opens `ParcelDetailActivity`, which shows:
+Ready-to-pickup parcels whose JSON carries a `multiCompartment` block with
+`presentation = true` and share the same `multiCompartment.uuid` are collapsed
+into a single logical row named `MULTISKRYTKA <uuid-section>`, where
+`<uuid-section>` is the part of the uuid before the first `-`. The row also
+shows the number of parcels and the usual pickup point / sender. A
+`multiCompartment` uuid seen on only one parcel is left as a normal row.
+
+Tapping a grouped row opens `MultiCompartmentActivity`, which shows a single QR
+code (taken from the first parcel in scan order) and the list of parcels the
+group contains; each contained parcel can be tapped to open its own
+`ParcelDetailActivity`. Tapping a normal row opens `ParcelDetailActivity`,
+which shows:
 
 - a locally generated QR code at the top for delivered parcels and for
   ready-to-pickup parcels (`statusGroup` `TO_PICKUP` / `status`
@@ -199,17 +210,20 @@ deprecated one. The global CPS catalogues (`/global/cps/api/v1/status-catalogue`
 ## Source layout
 
 ```
-app/AndroidManifest.xml                     INTERNET permission, MainActivity
+app/AndroidManifest.xml                     INTERNET permission, activities
 app/res/values/strings.xml                  app name
-app/src/com/example/inpost/MainActivity.java        UI, WebView, orchestration
-app/src/com/example/inpost/ParcelDetailActivity.java full parcel view + QR code
-app/src/com/example/inpost/ParcelCache.java          parcels.json cache
-app/src/com/example/inpost/Pkce.java                 OAuth constants + PKCE
-app/src/com/example/inpost/ApiClient.java            token exchange/refresh + parcels
-app/src/com/example/inpost/AuthStore.java            encrypted auth.json read/write
-app/src/com/example/inpost/AuthState.java            state fields
-app/src/com/example/inpost/SecureStore.java          Android Keystore AES-GCM helper
-libs/                                                ZXing core jar (downloaded by bootstrap)
+app/src/com/openpostmobajl/MainActivity.java              UI, WebView, orchestration
+app/src/com/openpostmobajl/ParcelDetailActivity.java      full parcel view + QR code
+app/src/com/openpostmobajl/MultiCompartmentActivity.java  multicompartment group + QR code
+app/src/com/openpostmobajl/ParcelUi.java                  list helpers + grouping
+app/src/com/openpostmobajl/ParcelEntry.java               list row (single or group)
+app/src/com/openpostmobajl/ParcelCache.java               parcels.json cache
+app/src/com/openpostmobajl/Pkce.java                      OAuth constants + PKCE
+app/src/com/openpostmobajl/ApiClient.java                 token exchange/refresh + parcels
+app/src/com/openpostmobajl/AuthStore.java                 encrypted auth.json read/write
+app/src/com/openpostmobajl/AuthState.java                 state fields
+app/src/com/openpostmobajl/SecureStore.java               Android Keystore AES-GCM helper
+libs/                                                      ZXing core jar (downloaded by bootstrap)
 ```
 
 The original "Hello World" sample is preserved in `app-hello/` (not built).

@@ -437,9 +437,10 @@ public class MainActivity extends Activity {
     private void render(ApiClient.ParcelResult res, boolean cached) {
         list.removeAllViews();
 
-        List<JSONObject> items = ParcelUi.sorted(res.parcels, false);
+        List<JSONObject> sorted = ParcelUi.sorted(res.parcels, false);
+        List<ParcelEntry> items = ParcelUi.grouped(sorted);
 
-        int n = items.size();
+        int n = sorted.size();
         if (cached) {
             status.setText("Cached " + res.backend + " | parcels: " + n + " — updating...");
         } else {
@@ -447,7 +448,7 @@ public class MainActivity extends Activity {
                     + ") | parcels: " + n);
         }
 
-        if (n == 0) {
+        if (items.isEmpty()) {
             TextView tv = new TextView(this);
             tv.setText("No parcels found.");
             tv.setPadding(0, dp(8), 0, dp(8));
@@ -455,9 +456,11 @@ public class MainActivity extends Activity {
             return;
         }
 
-        for (int i = 0; i < n; i++) {
-            final JSONObject p = items.get(i);
-            String text = ParcelUi.rowText(p);
+        for (int i = 0; i < items.size(); i++) {
+            final ParcelEntry entry = items.get(i);
+            String text = entry.isMulti()
+                    ? ParcelUi.multiCompartmentRowText(entry)
+                    : ParcelUi.rowText(entry.first);
             TextView tv = new TextView(this);
             tv.setText(text);
             tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
@@ -468,9 +471,22 @@ public class MainActivity extends Activity {
             tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, ParcelDetailActivity.class);
-                    intent.putExtra("parcel", p.toString());
-                    startActivity(intent);
+                    if (entry.isMulti()) {
+                        JSONArray arr = new JSONArray();
+                        for (int j = 0; j < entry.parcels.size(); j++) {
+                            arr.put(entry.parcels.get(j));
+                        }
+                        Intent intent = new Intent(MainActivity.this,
+                                MultiCompartmentActivity.class);
+                        intent.putExtra("parcels", arr.toString());
+                        intent.putExtra("uuid", entry.multiUuid);
+                        startActivity(intent);
+                    } else {
+                        Intent intent = new Intent(MainActivity.this,
+                                ParcelDetailActivity.class);
+                        intent.putExtra("parcel", entry.first.toString());
+                        startActivity(intent);
+                    }
                 }
             });
             list.addView(tv);
