@@ -41,7 +41,7 @@ final class ParcelCache {
                 return null;
             }
 
-            String json = new String(SecureStore.decrypt(raw), "UTF-8");
+            String json = new String(SecureStore.decrypt(raw, FILE), "UTF-8");
             JSONObject o = new JSONObject(json);
             JSONArray parcels = o.optJSONArray("parcels");
             if (parcels == null) {
@@ -65,7 +65,7 @@ final class ParcelCache {
             o.put("parcels", res.parcels);
 
             byte[] plain = o.toString(2).getBytes("UTF-8");
-            SecureStore.writeFile(file(ctx), SecureStore.encrypt(plain));
+            SecureStore.writeFile(file(ctx), SecureStore.encrypt(plain, FILE));
         } catch (Exception ignored) {
             // Cache is best-effort; never break the UI because of it.
         }
