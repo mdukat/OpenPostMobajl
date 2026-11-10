@@ -51,6 +51,9 @@ BUILD_TOOLS="${BUILD_TOOLS:-34.0.0}"
 ZXING_VERSION="${ZXING_VERSION:-3.5.3}"
 ZXING_FILE="zxing-core-$ZXING_VERSION.jar"
 ZXING_URL="${ZXING_URL:-https://repo1.maven.org/maven2/com/google/zxing/core/$ZXING_VERSION/core-$ZXING_VERSION.jar}"
+# Pinned SHA-256 of the genuine ZXing core $ZXING_VERSION artifact (the value
+# matches Maven Central's published SHA-1 of the same jar).
+ZXING_SHA256="${ZXING_SHA256:-8d8064c1636fdaef7189dd9055c7d59950a8940a12f2293956446ec3c109fd82}"
 
 # Packages that must be present in the mirror.
 ALPINE_PKGS="openjdk17-jdk openjdk17-jre-headless gcompat libucontext musl-obstack libgcc"
@@ -108,6 +111,14 @@ download() {
 file_sha1() {
     if command -v sha1sum >/dev/null 2>&1; then
         sha1sum "$1" | cut -d' ' -f1
+    else
+        printf ''
+    fi
+}
+
+file_sha256() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | cut -d' ' -f1
     else
         printf ''
     fi
@@ -307,6 +318,9 @@ AWKEOF
 
     # ---- ZXing core (local QR generation) ----
     download "$ZXING_URL" "$ZXING_FILE"
+    _got="$(file_sha256 "$MIRROR/$ZXING_FILE")"
+    [ "$_got" = "$ZXING_SHA256" ] \
+        || die "ZXing checksum mismatch: expected $ZXING_SHA256, got ${_got:-<no sha256sum>}"
     manifest_add zxing core "$ZXING_FILE"
 }
 
@@ -343,6 +357,9 @@ install_zxing() {
     _src="$MIRROR/$ZXING_FILE"
     _dst="$TARGET/libs/$ZXING_FILE"
     [ -s "$_src" ] || die "missing ZXing jar in mirror: $_src"
+    _got="$(file_sha256 "$_src")"
+    [ "$_got" = "$ZXING_SHA256" ] \
+        || die "ZXing checksum mismatch: expected $ZXING_SHA256, got ${_got:-<no sha256sum>}"
     mkdir -p "$TARGET/libs"
     if [ -s "$_dst" ]; then
         log "ZXing jar already present: $_dst"
