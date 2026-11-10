@@ -109,7 +109,8 @@ Key methods:
 
 Main panel layout (top to bottom): burger button, `status` `TextView`, a
 `ScrollView` containing the `list` `LinearLayout`. Sidebar buttons: **Refresh**,
-**Delivered parcels**, **Settings**, **Licenses**, **Sign out**.
+**Delivered parcels**, **Settings**, **Licenses**, **Sign out**. In simplified
+mode a weighted spacer pushes **Settings** and **Licenses** to the bottom.
 
 `render(res, cached)` is the single place that turns data into rows:
 

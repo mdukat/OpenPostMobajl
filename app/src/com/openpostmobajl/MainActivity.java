@@ -264,6 +264,14 @@ public class MainActivity extends BaseActivity {
         sidebar.addView(delivered, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        if (simplified) {
+            // Simplified mode: keep Settings/Licenses at the bottom, away from the
+            // everyday actions above.
+            View spacer = new View(this);
+            sidebar.addView(spacer, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        }
+
         Button settings = new Button(this);
         settings.setText(R.string.common_settings);
         settings.setOnClickListener(new View.OnClickListener() {

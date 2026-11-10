@@ -143,7 +143,8 @@ map, and instructions for adding a new view.
 An accessibility mode for older users, toggled with the **Simplified mode**
 checkbox in **Settings** (on by default). When enabled it:
 
-- hides the status line (errors are still shown) and **Sign out**;
+- hides the status line (errors are still shown) and **Sign out**, and moves
+  **Settings** / **Licenses** to the bottom of the sidebar;
 - turns the burger into a **Menu** button and adds a same-sized **Refresh**
   button next to it in the top bar (both a little larger, for easier tapping);
 - shows every list row as `Parcel: <sender name>` followed by the translated
