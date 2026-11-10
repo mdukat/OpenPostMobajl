@@ -2,13 +2,17 @@
 
 ## Info od człowieka
 
-Apka jest wyklankerowana chińskim modelem. Przeczytaj kod zanim zbudujesz/zainstalujesz. To Twoje urządzenia i ty za nie odpowiadasz. Piesek na ikonce to moja psina, jako alternatywa dla tego jednego VonDojcza przez którego istnienie powstał ten projekt. Kodzik i miniaturka w tym repo jest na licencji MIT, więc jeśli chcesz jakąś nową funkcjonalność, [to wiesz co robić](https://www.youtube.com/watch?v=aHtEm9sxzYg).
+Apka jest wyklankerowana chińskim modelem `deepseek-v4.1-flash` z openroutera. Przeczytaj kod zanim zbudujesz/zainstalujesz. To Twoje urządzenia i ty za nie odpowiadasz. Piesek na ikonce to moja psina, jako alternatywa dla tego jednego VonDojcza przez którego istnienie powstał ten projekt. Kodzik i miniaturka w tym repo jest na licencji MIT, więc jeśli chcesz jakąś nową funkcjonalność, [to wiesz co robić](https://www.youtube.com/watch?v=aHtEm9sxzYg).
 
 TLDR: logujesz sie do apki przez webview z oficjalnej aplikacji, token jest trzymany w androidowym keystore, klikasz na paczuche i odbierasz. Koniec funkcjonalności apki.
 
 Jeśli chcesz zbudować od zera: postaw se VMke z Alpine Linuxem, pobierz to repo, odpal `bootstrap.sh` a następnie `build-release.sh`. W katalogu `out` zobaczysz gotowy pliczek APK do wgrania na telefon.
 
 Jeśli pewnej firmie od dostarczania paczek nie podoba się, że to repozytorium istnieje - dajcie znaka (najlepiej na maila). Usune w przeciągu 14 dni kalendarzowych od otrzymaniu takiej informacji. Wiecie jak mnie znaleźć.
+
+Apka by-default posiada tryb uproszczonego widoku. Specjalnie klankerowałem go z myślą o osobach starszych w mojej rodzinie. Zawiera powiększone czcionki, prosty język, tyle informacji, ile jest osobie potrzebne do odebrania przesyłki. Jeśli jesteś poweruserem, możesz go wyłączyć w ustawieniach i obserwować status paczek czytając surowy JSON zwracany przez endpoint.
+
+Funkcjonalność powiadomień jest dosyć trudna i klanker sobie z nią dobrze nie radził. Jego wypociny znajdziesz w branchu `func/notifications`, ale z moich testów generalnie nie działa to dobrze i wymaga więcej pracy albo osoby która ogarnia ekosystem androida (wspominałem już, że nie potrafie w androida?).
 
 Poniżej kontynuacja README od klankera.
 
