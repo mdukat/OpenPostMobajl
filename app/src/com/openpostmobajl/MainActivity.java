@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +18,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -91,6 +94,14 @@ public class MainActivity extends Activity {
         }
 
         setContentView(buildPanel());
+        if (Build.VERSION.SDK_INT >= 33) {
+            BackApi33.register(this, new Runnable() {
+                @Override
+                public void run() {
+                    handleBack();
+                }
+            });
+        }
 
         boolean haveCredentials = (state.authToken != null && state.authToken.length() > 0)
                 || (state.refreshToken != null && state.refreshToken.length() > 0);
@@ -343,11 +354,6 @@ public class MainActivity extends Activity {
         cm.setAcceptThirdPartyCookies(webView, true);
 
         webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String u) {
-                return handleUrl(u);
-            }
-
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return handleUrl(request.getUrl().toString());
@@ -623,7 +629,13 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
+        // Pre-API 33 path; on 33+ BackApi33 registers a predictive-back callback.
+        handleBack();
+    }
+
+    private void handleBack() {
         if (sidebarOpen) {
             closeSidebar();
             return;
@@ -632,7 +644,24 @@ public class MainActivity extends Activity {
             webView.goBack();
             return;
         }
-        super.onBackPressed();
+        finish();
+    }
+
+    /**
+     * Predictive-back registration (API 33+), isolated in its own class so
+     * devices below API 33 never load the newer types.
+     */
+    private static final class BackApi33 {
+        static void register(Activity activity, final Runnable onBack) {
+            activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    new OnBackInvokedCallback() {
+                        @Override
+                        public void onBackInvoked() {
+                            onBack.run();
+                        }
+                    });
+        }
     }
 
     @Override
