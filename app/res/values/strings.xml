@@ -37,6 +37,11 @@
     <string name="detail_pickup_point">Pickup point: %1$s</string>
     <string name="detail_sender">Sender: %1$s</string>
     <string name="detail_error">Could not read parcel data.</string>
+    <string name="detail_label_number">Parcel number</string>
+    <string name="detail_label_status">Status</string>
+    <string name="detail_label_pickup_point">Pickup point</string>
+    <string name="detail_label_sender">Sender</string>
+    <string name="detail_qr_hint">Tap the QR code to open it full screen</string>
 
     <!-- Multi-compartment group -->
     <string name="multi_name">MULTISKRYTKA %1$s</string>
@@ -58,6 +63,26 @@
     <string name="licenses_project">PROJECT LICENSE (MIT)</string>
     <string name="licenses_third_party">THIRD-PARTY LICENSES</string>
     <string name="licenses_load_error">Could not load %1$s: %2$s</string>
+
+    <!-- Status labels (simplified mode) -->
+    <string name="status_confirmed">Confirmed</string>
+    <string name="status_dispatched_by_sender">Dispatched by sender</string>
+    <string name="status_taken_by_courier">Taken by courier</string>
+    <string name="status_ready_to_pickup">Ready for pickup</string>
+    <string name="status_awaiting_collection">Waiting for collection</string>
+    <string name="status_ready_to_collect">Ready to collect</string>
+    <string name="status_out_for_delivery">Out for delivery</string>
+    <string name="status_delivered">Delivered</string>
+    <string name="status_undelivered">Not delivered</string>
+    <string name="status_claimed">Claimed</string>
+    <string name="status_group_to_send">parcel to send</string>
+    <string name="status_group_created">parcel created</string>
+    <string name="status_group_in_transit">parcel in transit</string>
+    <string name="status_group_in_delivery">parcel out for delivery</string>
+    <string name="status_group_to_pickup">parcel ready for pickup</string>
+    <string name="status_group_delivered">parcel delivered</string>
+    <string name="status_group_undelivered">parcel not delivered</string>
+    <string name="status_group_claimed">parcel claimed</string>
 
     <!-- Settings -->
     <string name="settings_language">Language</string>

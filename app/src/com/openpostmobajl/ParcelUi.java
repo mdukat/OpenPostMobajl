@@ -59,6 +59,164 @@ final class ParcelUi {
         return o == null ? "" : o.optString("name", "");
     }
 
+    /** Simplified-mode list row: {@code "Parcel: <sender>\n<status>"}. */
+    static String simplifiedRowText(Context ctx, JSONObject p) {
+        String sender = senderName(p);
+        if (sender.length() == 0) {
+            sender = last6(p);
+        }
+        String text = ctx.getString(R.string.main_parcel_simplified, sender);
+        String status = statusText(ctx, p.optString("status", ""),
+                p.optString("statusGroup", ""));
+        if (status.length() > 0) {
+            text += "\n" + status;
+        }
+        return text;
+    }
+
+    /**
+     * Human status for simplified mode, e.g.
+     * {@code "Taken by courier - parcel in transit"}. Unknown codes are
+     * prettified ({@code SOME_CODE} -&gt; {@code Some code}).
+     */
+    static String statusText(Context ctx, String status, String group) {
+        String s = statusLabel(ctx, status);
+        String g = groupLabel(ctx, group);
+        if (s.length() == 0) {
+            return g;
+        }
+        if (g.length() == 0 || s.equalsIgnoreCase(g)) {
+            return s;
+        }
+        return s + " - " + g;
+    }
+
+    static String statusLabel(Context ctx, String code) {
+        int id = statusStringId(code);
+        return id != 0 ? ctx.getString(id) : prettify(code);
+    }
+
+    static String groupLabel(Context ctx, String code) {
+        int id = groupStringId(code);
+        return id != 0 ? ctx.getString(id) : prettify(code);
+    }
+
+    private static int statusStringId(String code) {
+        if (code == null) {
+            return 0;
+        }
+        switch (code.toUpperCase(Locale.US)) {
+            case "CONFIRMED": return R.string.status_confirmed;
+            case "DISPATCHED_BY_SENDER": return R.string.status_dispatched_by_sender;
+            case "TAKEN_BY_COURIER": return R.string.status_taken_by_courier;
+            case "READY_TO_PICKUP": return R.string.status_ready_to_pickup;
+            case "AWAITING_COLLECTION": return R.string.status_awaiting_collection;
+            case "READY_TO_COLLECT": return R.string.status_ready_to_collect;
+            case "OUT_FOR_DELIVERY": return R.string.status_out_for_delivery;
+            case "DELIVERED": return R.string.status_delivered;
+            case "UNDELIVERED": return R.string.status_undelivered;
+            case "CLAIMED": return R.string.status_claimed;
+            default: return 0;
+        }
+    }
+
+    private static int groupStringId(String code) {
+        if (code == null) {
+            return 0;
+        }
+        switch (code.toUpperCase(Locale.US)) {
+            case "TO_SEND":
+            case "TO_SENT":
+                return R.string.status_group_to_send;
+            case "CREATED":
+                return R.string.status_group_created;
+            case "IN_TRANSIT":
+                return R.string.status_group_in_transit;
+            case "IN_DELIVERY":
+                return R.string.status_group_in_delivery;
+            case "TO_PICKUP":
+            case "AWAITING_COLLECTION":
+            case "READY_TO_COLLECT":
+                return R.string.status_group_to_pickup;
+            case "DELIVERED":
+                return R.string.status_group_delivered;
+            case "UNDELIVERED":
+                return R.string.status_group_undelivered;
+            case "CLAIMED":
+                return R.string.status_group_claimed;
+            default: return 0;
+        }
+    }
+
+    private static String prettify(String code) {
+        if (code == null || code.length() == 0) {
+            return "";
+        }
+        String s = code.replace('_', ' ').toLowerCase(Locale.US);
+        return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    }
+
+    /**
+     * Multi-line pickup point for simplified mode: name, location description,
+     * opening hours and the address. Empty lines are skipped.
+     */
+    static String pickupDetails(JSONObject p) {
+        JSONObject o = p.optJSONObject("pickUpPoint");
+        if (o == null) {
+            o = p.optJSONObject("pickUp");
+        }
+        if (o == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        appendLine(sb, o.optString("name", ""));
+        appendLine(sb, o.optString("locationDescription", ""));
+        appendLine(sb, o.optString("openingHours", ""));
+        JSONObject a = o.optJSONObject("addressDetails");
+        if (a != null) {
+            StringBuilder addr = new StringBuilder();
+            String street = a.optString("street", "");
+            String building = a.optString("buildingNumber", "");
+            if (street.length() > 0) {
+                addr.append(street);
+            }
+            if (building.length() > 0) {
+                if (addr.length() > 0) {
+                    addr.append(' ');
+                }
+                addr.append(building);
+            }
+            String post = a.optString("postCode", "");
+            String city = a.optString("city", "");
+            if (post.length() > 0 || city.length() > 0) {
+                if (addr.length() > 0) {
+                    addr.append(", ");
+                }
+                if (post.length() > 0) {
+                    addr.append(post);
+                    if (city.length() > 0) {
+                        addr.append(' ');
+                    }
+                }
+                if (city.length() > 0) {
+                    addr.append(city);
+                }
+            }
+            appendLine(sb, addr.toString());
+        }
+        return sb.toString();
+    }
+
+    private static void appendLine(StringBuilder sb, String line) {
+        if (line == null || line.length() == 0) {
+            return;
+        }
+        if (sb.length() > 0) {
+            sb.append('\n');
+        }
+        sb.append(line);
+    }
+
     /**
      * Epoch millis of a ready-to-pickup parcel's {@code expiryDate}, or 0 when
      * the parcel is not ready to pick up or has no valid date.

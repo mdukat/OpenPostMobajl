@@ -146,10 +146,18 @@ checkbox in **Settings** (off by default). When enabled it:
 
 - hides the status line (errors are still shown), the **Backend** selector and
   **Sign out**;
-- turns the burger into a **Menu** button and adds a **Refresh** button next to
-  it in the top bar;
-- shows every list row as `Parcel: <sender name>` with a visible border instead
-  of the compact `last6 · status · point · sender` line and dividers;
+- turns the burger into a **Menu** button and adds a same-sized **Refresh**
+  button next to it in the top bar (both a little larger, for easier tapping);
+- shows every list row as `Parcel: <sender name>` followed by the translated
+  status, with a visible border instead of the compact
+  `last6 · status · point · sender` line and dividers;
+- translates the status, e.g. `TAKEN_BY_COURIER (IN_TRANSIT)` →
+  `Taken by courier - parcel in transit` (and the Polish equivalent) via
+  `ParcelUi.statusText`;
+- splits the detail screen into separate labeled blocks — **Parcel number**,
+  translated **Status**, **Pickup point** (with `locationDescription`,
+  `openingHours` and `addressDetails`) and **Sender** — instead of one block,
+  and adds a hint that the QR code can be tapped to open full screen;
 - hides the raw JSON block on the parcel detail screen;
 - scales all text up (font scale ×1.3, on top of the system setting).
 

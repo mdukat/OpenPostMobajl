@@ -38,6 +38,11 @@
     <string name="detail_pickup_point">Punkt odbioru: %1$s</string>
     <string name="detail_sender">Nadawca: %1$s</string>
     <string name="detail_error">Nie udało się odczytać danych paczki.</string>
+    <string name="detail_label_number">Numer paczki</string>
+    <string name="detail_label_status">Status</string>
+    <string name="detail_label_pickup_point">Punkt odbioru</string>
+    <string name="detail_label_sender">Nadawca</string>
+    <string name="detail_qr_hint">Dotknij kodu QR, aby otworzyć go na pełnym ekranie</string>
 
     <!-- Grupa wielu skrytek -->
     <string name="multi_name">MULTISKRYTKA %1$s</string>
@@ -61,6 +66,26 @@
     <string name="licenses_project">LICENCJA PROJEKTU (MIT)</string>
     <string name="licenses_third_party">LICENCJE STRON TRZECICH</string>
     <string name="licenses_load_error">Nie udało się wczytać %1$s: %2$s</string>
+
+    <!-- Etykiety statusów (tryb uproszczony) -->
+    <string name="status_confirmed">Potwierdzona</string>
+    <string name="status_dispatched_by_sender">Wysłana przez nadawcę</string>
+    <string name="status_taken_by_courier">Przejęta przez kuriera</string>
+    <string name="status_ready_to_pickup">Gotowa do odbioru</string>
+    <string name="status_awaiting_collection">Oczekuje na odbiór</string>
+    <string name="status_ready_to_collect">Gotowa do odbioru</string>
+    <string name="status_out_for_delivery">W dostawie</string>
+    <string name="status_delivered">Dostarczona</string>
+    <string name="status_undelivered">Niedostarczona</string>
+    <string name="status_claimed">Reklamacja</string>
+    <string name="status_group_to_send">paczka do wysłania</string>
+    <string name="status_group_created">paczka utworzona</string>
+    <string name="status_group_in_transit">paczka w transporcie</string>
+    <string name="status_group_in_delivery">paczka w dostawie</string>
+    <string name="status_group_to_pickup">paczka gotowa do odbioru</string>
+    <string name="status_group_delivered">paczka dostarczona</string>
+    <string name="status_group_undelivered">paczka niedostarczona</string>
+    <string name="status_group_claimed">paczka w reklamacji</string>
 
     <!-- Ustawienia -->
     <string name="settings_language">Język</string>

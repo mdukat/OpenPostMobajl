@@ -158,4 +158,5 @@ Keys are grouped by screen in the resource files:
 | `expires_*` | expiry countdown (`ParcelUi.expiryText`) |
 | `delivered_*` | `DeliveredParcelsActivity` |
 | `licenses_*` | `LicensesActivity` |
+| `status_*` | translated package statuses/groups for simplified mode |
 | `settings_*` | `SettingsActivity` |

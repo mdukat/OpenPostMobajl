@@ -138,11 +138,13 @@ public class MainActivity extends BaseActivity {
         Button burger = new Button(this);
         if (simplified) {
             burger.setText(R.string.common_menu);
+            burger.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            burger.setPadding(dp(14), dp(12), dp(14), dp(12));
         } else {
             burger.setText("\u2261"); // ≡ (safe burger glyph)
+            burger.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
+            burger.setPadding(dp(8), 0, dp(8), 0);
         }
-        burger.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
-        burger.setPadding(dp(8), 0, dp(8), 0);
         burger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -157,6 +159,8 @@ public class MainActivity extends BaseActivity {
             // top bar next to "Menu".
             Button quickRefresh = new Button(this);
             quickRefresh.setText(R.string.common_refresh);
+            quickRefresh.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            quickRefresh.setPadding(dp(14), dp(12), dp(14), dp(12));
             quickRefresh.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -532,7 +536,7 @@ public class MainActivity extends BaseActivity {
         for (int i = 0; i < items.size(); i++) {
             final ParcelEntry entry = items.get(i);
             String base = simplified
-                    ? simplifiedRowText(entry)
+                    ? ParcelUi.simplifiedRowText(this, entry.first)
                     : (entry.isMulti()
                     ? ParcelUi.multiCompartmentRowText(this, entry)
                     : ParcelUi.rowText(entry.first));
@@ -659,15 +663,6 @@ public class MainActivity extends BaseActivity {
         }
         list.removeAllViews();
         startLogin();
-    }
-
-    /** "Parcel: <sender>" row for simplified mode; falls back to the last 6 digits. */
-    private String simplifiedRowText(ParcelEntry entry) {
-        String sender = ParcelUi.senderName(entry.first);
-        if (sender == null || sender.length() == 0) {
-            sender = ParcelUi.last6(entry.first);
-        }
-        return getString(R.string.main_parcel_simplified, sender);
     }
 
     private void showError(Exception e) {

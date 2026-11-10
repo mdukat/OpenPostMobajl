@@ -143,8 +143,12 @@ Shows one parcel. In `onCreate`:
 - QR block: rendered when `statusGroup` is `DELIVERED`, or the parcel is
   ready-to-pickup (`statusGroup` `TO_PICKUP` / `status` `READY_TO_PICKUP`),
   **and** `qrCode` is non-empty. Tapping opens `QrFullscreenActivity`.
-- Summary: shipment number, status + status group, pickup point, sender.
-- Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`.
+- Summary: normally shipment number, status + status group, pickup point and
+  sender in one `TextView`; in **simplified mode** separate labeled blocks
+  (`addBlock`) for parcel number, translated status, pickup-point details and
+  sender, plus a "tap the QR code to open it full screen" hint.
+- Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
+  (hidden in simplified mode).
 
 Parses the `parcel` extra with `new JSONObject(...)`; malformed input shows
 "Could not read parcel data." instead of crashing.

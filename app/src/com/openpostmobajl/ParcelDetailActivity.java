@@ -111,6 +111,18 @@ public class ParcelDetailActivity extends BaseActivity {
                     qrLp.bottomMargin = dp(8);
                     content.addView(qrView, qrLp);
 
+                    if (simplified) {
+                        TextView qrHint = new TextView(this);
+                        qrHint.setText(R.string.detail_qr_hint);
+                        qrHint.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrHint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                        qrHint.setGravity(Gravity.CENTER_HORIZONTAL);
+                        qrHint.setPadding(0, 0, 0, dp(8));
+                        content.addView(qrHint, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
+
                     TextView qrText = new TextView(this);
                     qrText.setText(qr);
                     qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
@@ -123,19 +135,31 @@ public class ParcelDetailActivity extends BaseActivity {
             }
 
             // ---- summary ----
-            TextView summary = new TextView(this);
-            summary.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-            summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-            summary.setText(
-                    getString(R.string.detail_shipment, parcel.optString("shipmentNumber",
-                            parcel.optString("primaryParcelNumber", ""))) + "\n"
-                    + getString(R.string.detail_status, parcel.optString("status", ""),
-                            parcel.optString("statusGroup", "")) + "\n"
-                    + getString(R.string.detail_pickup_point, ParcelUi.pointName(parcel)) + "\n"
-                    + getString(R.string.detail_sender, ParcelUi.senderName(parcel)));
-            summary.setPadding(0, dp(8), 0, dp(8));
-            content.addView(summary, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            String number = parcel.optString("shipmentNumber",
+                    parcel.optString("primaryParcelNumber", ""));
+            String pickup = ParcelUi.pickupDetails(parcel);
+            if (simplified) {
+                // Separate, labeled blocks are easier to read than one big block.
+                addBlock(content, R.string.detail_label_number, number);
+                addBlock(content, R.string.detail_label_status,
+                        ParcelUi.statusText(this, status, group));
+                addBlock(content, R.string.detail_label_pickup_point,
+                        pickup.length() == 0 ? ParcelUi.pointName(parcel) : pickup);
+                addBlock(content, R.string.detail_label_sender, ParcelUi.senderName(parcel));
+            } else {
+                TextView summary = new TextView(this);
+                summary.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                summary.setText(
+                        getString(R.string.detail_shipment, number) + "\n"
+                        + getString(R.string.detail_status, status, group) + "\n"
+                        + getString(R.string.detail_pickup_point, ParcelUi.pointName(parcel)) + "\n"
+                        + getString(R.string.detail_sender, ParcelUi.senderName(parcel)));
+                summary.setPadding(0, dp(8), 0, dp(8));
+                content.addView(summary, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
 
             // ---- full JSON (hidden in simplified mode) ----
             if (!simplified) {
@@ -168,6 +192,24 @@ public class ParcelDetailActivity extends BaseActivity {
         root.addView(scroll, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(root);
+    }
+
+    /** A small gray label followed by the value; used by the simplified view. */
+    private void addBlock(LinearLayout parent, int labelRes, String value) {
+        TextView label = new TextView(this);
+        label.setText(labelRes);
+        label.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+        label.setPadding(0, dp(12), 0, 0);
+        parent.addView(label, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView text = new TextView(this);
+        text.setText(value);
+        text.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+        parent.addView(text, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     private int dp(int value) {

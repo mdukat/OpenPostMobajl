@@ -146,11 +146,7 @@ public class MultiCompartmentActivity extends BaseActivity {
             }
             TextView tv = new TextView(this);
             if (simplified) {
-                String sender = ParcelUi.senderName(p);
-                if (sender == null || sender.length() == 0) {
-                    sender = ParcelUi.last6(p);
-                }
-                tv.setText(getString(R.string.main_parcel_simplified, sender));
+                tv.setText(ParcelUi.simplifiedRowText(this, p));
             } else {
                 tv.setText(ParcelUi.rowText(p));
             }
