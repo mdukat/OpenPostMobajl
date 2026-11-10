@@ -57,6 +57,7 @@ public class MainActivity extends BaseActivity {
     private LinearLayout sidebar;
     private View scrim;
     private boolean sidebarOpen = false;
+    private boolean simplified = false;
     private AuthState state;
     private boolean codeHandled = false;
 
@@ -93,6 +94,7 @@ public class MainActivity extends BaseActivity {
             state.createdAt = nowIso();
         }
 
+        simplified = AppSettings.isSimplified(this);
         setContentView(buildPanel());
         if (Build.VERSION.SDK_INT >= 33) {
             BackApi33.register(this, new Runnable() {
@@ -134,7 +136,11 @@ public class MainActivity extends BaseActivity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button burger = new Button(this);
-        burger.setText("\u2261"); // ≡ (safe burger glyph)
+        if (simplified) {
+            burger.setText(R.string.common_menu);
+        } else {
+            burger.setText("\u2261"); // ≡ (safe burger glyph)
+        }
         burger.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
         burger.setPadding(dp(8), 0, dp(8), 0);
         burger.setOnClickListener(new View.OnClickListener() {
@@ -146,6 +152,21 @@ public class MainActivity extends BaseActivity {
         topBar.addView(burger, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        if (simplified) {
+            // Older users may not find Refresh in the sidebar, so keep it in the
+            // top bar next to "Menu".
+            Button quickRefresh = new Button(this);
+            quickRefresh.setText(R.string.common_refresh);
+            quickRefresh.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    loadParcels();
+                }
+            });
+            topBar.addView(quickRefresh, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+
         panel.addView(topBar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -153,6 +174,9 @@ public class MainActivity extends BaseActivity {
         status.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         status.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
         status.setText(R.string.main_status_ready);
+        if (simplified) {
+            status.setVisibility(View.GONE);
+        }
         panel.addView(status, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -237,17 +261,19 @@ public class MainActivity extends BaseActivity {
         sidebar.addView(delivered, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        backendBtn = new Button(this);
-        backendBtn.setText(backendLabel());
-        backendBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeSidebar();
-                cycleBackend();
-            }
-        });
-        sidebar.addView(backendBtn, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        if (!simplified) {
+            backendBtn = new Button(this);
+            backendBtn.setText(backendLabel());
+            backendBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    closeSidebar();
+                    cycleBackend();
+                }
+            });
+            sidebar.addView(backendBtn, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
 
         Button settings = new Button(this);
         settings.setText(R.string.common_settings);
@@ -273,17 +299,19 @@ public class MainActivity extends BaseActivity {
         sidebar.addView(licenses, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        Button signOut = new Button(this);
-        signOut.setText(R.string.common_sign_out);
-        signOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeSidebar();
-                signOut();
-            }
-        });
-        sidebar.addView(signOut, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        if (!simplified) {
+            Button signOut = new Button(this);
+            signOut.setText(R.string.common_sign_out);
+            signOut.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    closeSidebar();
+                    signOut();
+                }
+            });
+            sidebar.addView(signOut, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
 
         FrameLayout.LayoutParams sideLp = new FrameLayout.LayoutParams(
                 dp(SIDEBAR_WIDTH_DP), ViewGroup.LayoutParams.MATCH_PARENT);
@@ -446,6 +474,7 @@ public class MainActivity extends BaseActivity {
         status.setText(list.getChildCount() > 0
                 ? getString(R.string.main_status_updating)
                 : getString(R.string.main_status_loading));
+        status.setVisibility(simplified ? View.GONE : View.VISIBLE);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -474,6 +503,7 @@ public class MainActivity extends BaseActivity {
 
     private void render(ApiClient.ParcelResult res, boolean cached) {
         list.removeAllViews();
+        status.setVisibility(simplified ? View.GONE : View.VISIBLE);
         rowViews.clear();
         rowBase.clear();
         rowExpiry.clear();
@@ -501,15 +531,21 @@ public class MainActivity extends BaseActivity {
 
         for (int i = 0; i < items.size(); i++) {
             final ParcelEntry entry = items.get(i);
-            String base = entry.isMulti()
+            String base = simplified
+                    ? simplifiedRowText(entry)
+                    : (entry.isMulti()
                     ? ParcelUi.multiCompartmentRowText(this, entry)
-                    : ParcelUi.rowText(entry.first);
+                    : ParcelUi.rowText(entry.first));
             final long expiry = entry.expiryMillis();
             TextView tv = new TextView(this);
             tv.setText(expiry > 0 ? base + "\n" + ParcelUi.expiryText(this, expiry) : base);
             tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-            tv.setPadding(0, dp(12), 0, dp(12));
+            if (simplified) {
+                Ui.applyBorderedRow(this, tv);
+            } else {
+                tv.setPadding(0, dp(12), 0, dp(12));
+            }
             tv.setClickable(true);
             tv.setFocusable(true);
             tv.setOnClickListener(new View.OnClickListener() {
@@ -542,10 +578,12 @@ public class MainActivity extends BaseActivity {
                 hasCountdown = true;
             }
 
-            View divider = new View(this);
-            divider.setBackgroundColor(Color.LTGRAY);
-            list.addView(divider, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            if (!simplified) {
+                View divider = new View(this);
+                divider.setBackgroundColor(Color.LTGRAY);
+                list.addView(divider, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            }
         }
 
         syncCountdownTimer();
@@ -623,8 +661,19 @@ public class MainActivity extends BaseActivity {
         startLogin();
     }
 
+    /** "Parcel: <sender>" row for simplified mode; falls back to the last 6 digits. */
+    private String simplifiedRowText(ParcelEntry entry) {
+        String sender = ParcelUi.senderName(entry.first);
+        if (sender == null || sender.length() == 0) {
+            sender = ParcelUi.last6(entry.first);
+        }
+        return getString(R.string.main_parcel_simplified, sender);
+    }
+
     private void showError(Exception e) {
         status.setText(getString(R.string.common_error, e.getMessage()));
+        // Simplified mode hides the status line, but errors must still be visible.
+        status.setVisibility(View.VISIBLE);
     }
 
     @Override

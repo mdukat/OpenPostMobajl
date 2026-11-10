@@ -125,6 +125,10 @@ Main panel layout (top to bottom): burger button, `status` `TextView`, a
    countdown from `ParcelUi.expiryText`. The row's base text, view and expiry
    are kept in parallel lists so `updateCountdowns` can refresh only the
    countdown line every second while the activity is resumed.
+6. In **simplified mode** the row text becomes `Parcel: <sender>` (see
+   `MainActivity.simplifiedRowText`), rows get a border via
+   `Ui.applyBorderedRow`, dividers are skipped, and the status line is hidden
+   (errors re-show it).
 
 When there are no parcels it renders a single "No parcels found." row. Rows are
 `TextView`s with a 1 px `View` divider.
@@ -168,11 +172,13 @@ renders whatever group it is given.
 
 File: `app/src/com/openpostmobajl/SettingsActivity.java`
 
-Top bar (`← Back` + title) and a `Spinner` language picker built from
-`LocaleHelper.CODES`/`LABELS`, followed by a short description. Selecting a
-language saves it via `LocaleHelper.setLanguage` and calls `recreate()`, so the
-screen relabels immediately; other activities recreate on `onResume` when the
-language changed. Extends `BaseActivity`. See [`LANGUAGES.md`](LANGUAGES.md).
+Top bar (`← Back` + title), a `Spinner` language picker built from
+`LocaleHelper.CODES`/`LABELS` with a short description, and a **Simplified
+mode** `CheckBox` with its own description. Selecting a language saves it via
+`LocaleHelper.setLanguage`; toggling the checkbox saves it via
+`AppSettings.setSimplified`. Both call `recreate()`, so the screen updates
+immediately; other activities recreate on `onResume` when either setting
+changed. Extends `BaseActivity`. See [`LANGUAGES.md`](LANGUAGES.md).
 
 ### `DeliveredParcelsActivity`
 
@@ -244,13 +250,21 @@ earliest valid expiry among members, or `0`). Constructed via
 `QrCode.generate(content, size)` builds an ARGB bitmap with ZXing core, UTF-8
 and margin 2. Returns `null` on failure; callers must null-check.
 
-### `BaseActivity` / `LocaleHelper`
+### `BaseActivity` / `AppSettings` / `LocaleHelper`
 
 `BaseActivity` (`app/src/com/openpostmobajl/BaseActivity.java`) is the base for
-every activity. It applies the selected language in `attachBaseContext` and
-recreates the activity in `onResume` if the language changed while it was in
-the back stack. `LocaleHelper` stores the choice in `SharedPreferences` and
-maps codes to `values-<code>` resources. See [`LANGUAGES.md`](LANGUAGES.md).
+every activity. In `attachBaseContext` it calls `AppSettings.wrap`, which
+applies the selected language and (in simplified mode) a larger font scale, and
+it recreates the activity in `onResume` if the language or simplified mode
+changed while it was in the back stack. `AppSettings` stores `simplified_mode`
+and `LocaleHelper` stores the language, both in the same `SharedPreferences`
+file. See [`LANGUAGES.md`](LANGUAGES.md).
+
+### `Ui` — `app/src/com/openpostmobajl/Ui.java`
+
+Small view helpers for the list screens: `Ui.dp`, `Ui.borderedRow` and
+`Ui.applyBorderedRow` (padding + rounded border + bottom gap) used for the
+simplified-mode list rows.
 
 ---
 

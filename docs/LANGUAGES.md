@@ -132,8 +132,9 @@ is nothing to add to the build scripts or the manifest.
 
 - `LocaleHelper.getLanguage()` reads the choice from `SharedPreferences`
   (`openpostmobajl_settings`), defaulting to Polish.
-- `BaseActivity.attachBaseContext()` wraps the activity's resources with the
-  chosen `Locale`, so every `getString(R.string…)` returns the right language.
+- `BaseActivity.attachBaseContext()` calls `AppSettings.wrap()`, which applies
+  the chosen `Locale` (and, in simplified mode, the larger font scale), so every
+  `getString(R.string…)` returns the right language.
 - `SettingsActivity`'s language `Spinner` saves the choice and calls
   `recreate()`, so the Settings screen updates at once. `BaseActivity.onResume()`
   recreates any other activity (e.g. `MainActivity`) the next time it comes to

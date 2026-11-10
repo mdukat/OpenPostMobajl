@@ -26,6 +26,7 @@ public class DeliveredParcelsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean simplified = AppSettings.isSimplified(this);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -89,10 +90,22 @@ public class DeliveredParcelsActivity extends BaseActivity {
             for (int i = 0; i < items.size(); i++) {
                 final JSONObject p = items.get(i);
                 TextView tv = new TextView(this);
-                tv.setText(ParcelUi.rowText(p));
+                if (simplified) {
+                    String sender = ParcelUi.senderName(p);
+                    if (sender == null || sender.length() == 0) {
+                        sender = ParcelUi.last6(p);
+                    }
+                    tv.setText(getString(R.string.main_parcel_simplified, sender));
+                } else {
+                    tv.setText(ParcelUi.rowText(p));
+                }
                 tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
                 tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-                tv.setPadding(0, dp(12), 0, dp(12));
+                if (simplified) {
+                    Ui.applyBorderedRow(this, tv);
+                } else {
+                    tv.setPadding(0, dp(12), 0, dp(12));
+                }
                 tv.setClickable(true);
                 tv.setFocusable(true);
                 tv.setOnClickListener(new View.OnClickListener() {
@@ -106,10 +119,12 @@ public class DeliveredParcelsActivity extends BaseActivity {
                 });
                 list.addView(tv);
 
-                View divider = new View(this);
-                divider.setBackgroundColor(Color.LTGRAY);
-                list.addView(divider, new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                if (!simplified) {
+                    View divider = new View(this);
+                    divider.setBackgroundColor(Color.LTGRAY);
+                    list.addView(divider, new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                }
             }
         }
 

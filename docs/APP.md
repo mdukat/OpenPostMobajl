@@ -131,13 +131,33 @@ QR generation uses the ZXing core jar installed by `bootstrap.sh` into
 - **Main view:** a top bar with a burger button (`≡`) on the left and the
   `OpenPostMobajl` title, then the status line and the parcel list.
 - **Sidebar:** tap the burger to slide in a panel with **Refresh**,
-  **Delivered parcels**, **Backend: auto/v4/global**, **Licenses**, and
-  **Sign out**. Close it with the `×` button, by tapping the dimmed scrim, or
-  with the system Back button.
+  **Delivered parcels**, **Backend: auto/v4/global**, **Settings**,
+  **Licenses**, and **Sign out**. Close it with the `×` button, by tapping the
+  dimmed scrim, or with the system Back button.
 - The status line and parcel list always stay in the main view.
 
 See [`VIEWS.md`](VIEWS.md) for a per-screen code reference, the navigation
 map, and instructions for adding a new view.
+
+## Simplified mode
+
+An accessibility mode for older users, toggled with the **Simplified mode**
+checkbox in **Settings** (off by default). When enabled it:
+
+- hides the status line (errors are still shown), the **Backend** selector and
+  **Sign out**;
+- turns the burger into a **Menu** button and adds a **Refresh** button next to
+  it in the top bar;
+- shows every list row as `Parcel: <sender name>` with a visible border instead
+  of the compact `last6 · status · point · sender` line and dividers;
+- hides the raw JSON block on the parcel detail screen;
+- scales all text up (font scale ×1.3, on top of the system setting).
+
+The flag is stored in `SharedPreferences` (`openpostmobajl_settings`,
+`simplified_mode`). It is applied together with the language by
+`AppSettings.wrap` in `BaseActivity.attachBaseContext`, so it affects the whole
+app; activities recreate on resume when it changes. The bordered-row style is
+`Ui.applyBorderedRow`.
 
 ## Cache
 

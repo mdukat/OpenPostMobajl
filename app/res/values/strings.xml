@@ -26,6 +26,7 @@
     <string name="main_status_cached">Cached %1$s | parcels: %2$d — updating…</string>
     <string name="main_status_backend">Backend: %1$s (pref %2$s) | parcels: %3$d</string>
     <string name="main_no_parcels">No parcels found.</string>
+    <string name="main_parcel_simplified">Parcel: %1$s</string>
     <string name="main_login_prompt">Log in with your phone number and SMS code. The app continues automatically after the redirect.</string>
     <string name="main_exchanging_code">Exchanging authorization code…</string>
 
@@ -61,4 +62,6 @@
     <!-- Settings -->
     <string name="settings_language">Language</string>
     <string name="settings_language_description">Choose the app language. The change is applied immediately.</string>
+    <string name="settings_simplified">Simplified mode</string>
+    <string name="settings_simplified_description">Larger text, clearer buttons and a simple parcel list. Recommended for older users.</string>
 </resources>

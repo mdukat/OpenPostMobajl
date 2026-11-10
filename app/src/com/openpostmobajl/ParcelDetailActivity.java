@@ -28,6 +28,7 @@ public class ParcelDetailActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        boolean simplified = AppSettings.isSimplified(this);
         String json = getIntent().getStringExtra("parcel");
         JSONObject parcel = null;
         try {
@@ -136,25 +137,27 @@ public class ParcelDetailActivity extends BaseActivity {
             content.addView(summary, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-            View divider = new View(this);
-            divider.setBackgroundColor(Color.LTGRAY);
-            content.addView(divider, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            // ---- full JSON (hidden in simplified mode) ----
+            if (!simplified) {
+                View divider = new View(this);
+                divider.setBackgroundColor(Color.LTGRAY);
+                content.addView(divider, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 1));
 
-            // ---- full JSON ----
-            TextView dump = new TextView(this);
-            dump.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-            dump.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-            dump.setTypeface(Typeface.MONOSPACE);
-            dump.setTextIsSelectable(true);
-            dump.setPadding(0, dp(8), 0, dp(8));
-            try {
-                dump.setText(parcel.toString(2));
-            } catch (Exception e) {
-                dump.setText(String.valueOf(parcel));
+                TextView dump = new TextView(this);
+                dump.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                dump.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+                dump.setTypeface(Typeface.MONOSPACE);
+                dump.setTextIsSelectable(true);
+                dump.setPadding(0, dp(8), 0, dp(8));
+                try {
+                    dump.setText(parcel.toString(2));
+                } catch (Exception e) {
+                    dump.setText(String.valueOf(parcel));
+                }
+                content.addView(dump, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             }
-            content.addView(dump, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         } else {
             TextView error = new TextView(this);
             error.setText(R.string.detail_error);

@@ -27,6 +27,7 @@
     <string name="main_status_cached">Pamięć podręczna %1$s | paczki: %2$d — aktualizowanie…</string>
     <string name="main_status_backend">Backend: %1$s (pref %2$s) | paczki: %3$d</string>
     <string name="main_no_parcels">Nie znaleziono paczek.</string>
+    <string name="main_parcel_simplified">Paczka: %1$s</string>
     <string name="main_login_prompt">Zaloguj się numerem telefonu i kodem SMS. Aplikacja przejdzie dalej automatycznie po przekierowaniu.</string>
     <string name="main_exchanging_code">Wymienianie kodu autoryzacyjnego…</string>
 
@@ -64,4 +65,6 @@
     <!-- Ustawienia -->
     <string name="settings_language">Język</string>
     <string name="settings_language_description">Wybierz język aplikacji. Zmiana jest stosowana natychmiast.</string>
+    <string name="settings_simplified">Tryb uproszczony</string>
+    <string name="settings_simplified_description">Większy tekst, czytelniejsze przyciski i prosta lista paczek. Zalecane dla starszych użytkowników.</string>
 </resources>

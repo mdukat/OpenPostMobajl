@@ -9,14 +9,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 /**
- * Settings screen. Currently a language picker; the selection is applied
- * immediately (this activity recreates itself and the others follow on resume).
+ * Settings screen: language picker and the simplified mode for older users.
+ * Both changes are applied immediately (this activity recreates itself and the
+ * others follow on resume).
  */
 public class SettingsActivity extends BaseActivity {
 
@@ -105,6 +107,38 @@ public class SettingsActivity extends BaseActivity {
         description.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
         description.setPadding(0, dp(8), 0, dp(8));
         content.addView(description, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        View separator = new View(this);
+        separator.setBackgroundColor(Color.LTGRAY);
+        content.addView(separator, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 1));
+
+        // ---- simplified mode ----
+        final CheckBox simplified = new CheckBox(this);
+        simplified.setText(R.string.settings_simplified);
+        simplified.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+        simplified.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+        simplified.setChecked(AppSettings.isSimplified(this));
+        simplified.setPadding(0, dp(16), 0, dp(4));
+        simplified.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(android.widget.CompoundButton buttonView, boolean isChecked) {
+                if (isChecked != AppSettings.isSimplified(SettingsActivity.this)) {
+                    AppSettings.setSimplified(SettingsActivity.this, isChecked);
+                    recreate();
+                }
+            }
+        });
+        content.addView(simplified, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView simplifiedDescription = new TextView(this);
+        simplifiedDescription.setText(R.string.settings_simplified_description);
+        simplifiedDescription.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+        simplifiedDescription.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+        simplifiedDescription.setPadding(0, 0, 0, dp(8));
+        content.addView(simplifiedDescription, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         root.addView(scroll, new LinearLayout.LayoutParams(
