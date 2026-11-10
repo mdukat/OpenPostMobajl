@@ -68,6 +68,11 @@ final class ParcelUi {
         return parseIsoMillis(p.optString("expiryDate", ""));
     }
 
+    /** Epoch millis of a parcel's {@code storedDate}, or 0 if absent/invalid. */
+    static long storedMillis(JSONObject p) {
+        return parseIsoMillis(p.optString("storedDate", ""));
+    }
+
     static long parseIsoMillis(String s) {
         if (s == null || s.length() == 0) {
             return 0;
@@ -207,10 +212,11 @@ final class ParcelUi {
     }
 
     /**
-     * @param deliveredOnly true = only delivered parcels, false = only
-     *                      non-delivered parcels.
+     * @param deliveredOnly true = only delivered parcels, newest
+     *                      {@code storedDate} first; false = only
+     *                      non-delivered parcels, sorted by status rank.
      */
-    static List<JSONObject> sorted(JSONArray parcels, boolean deliveredOnly) {
+    static List<JSONObject> sorted(JSONArray parcels, final boolean deliveredOnly) {
         List<JSONObject> items = new ArrayList<JSONObject>();
         for (int i = 0; i < parcels.length(); i++) {
             JSONObject p = parcels.optJSONObject(i);
@@ -224,6 +230,10 @@ final class ParcelUi {
         Collections.sort(items, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
+                if (deliveredOnly) {
+                    // Newest stored first; a missing/invalid storedDate (0) last.
+                    return Long.compare(storedMillis(b), storedMillis(a));
+                }
                 return Integer.compare(rank(a), rank(b));
             }
         });

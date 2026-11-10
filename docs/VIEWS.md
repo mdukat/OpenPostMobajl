@@ -167,8 +167,9 @@ renders whatever group it is given.
 File: `app/src/com/openpostmobajl/DeliveredParcelsActivity.java`
 
 Reads `ParcelCache.load(this)` **synchronously on the UI thread** (no network),
-filters with `ParcelUi.sorted(res.parcels, true)`, and renders `rowText` rows
-that open `ParcelDetailActivity`. Shows "No delivered parcels." when empty.
+filters with `ParcelUi.sorted(res.parcels, true)` (which sorts delivered
+parcels by `storedDate`, newest first), and renders `rowText` rows that open
+`ParcelDetailActivity`. Shows "No delivered parcels." when empty.
 It does **not** group multi-compartment parcels.
 
 If you add heavier work here, move the cache load off the UI thread — the
@@ -209,9 +210,10 @@ view. Static, package-private, no state.
 | `multiCompartmentUuid(p)` | uuid when ready-to-pickup **and** `multiCompartment.presentation == true`, else `null` |
 | `multiCompartmentName(uuid)` | `MULTISKRYTKA <part before first '-'>` |
 | `grouped(sorted)` | collapses duplicate presentable uuids into `ParcelEntry` groups |
-| `sorted(parcels, deliveredOnly)` | filters delivered/undelivered, stable-sorts by `rank` |
+| `sorted(parcels, deliveredOnly)` | filters delivered/undelivered; non-delivered by `rank`, delivered by `storedDate` newest first (missing last) |
 | `rank(p)` | 0 ready-to-collect, 1 in transit, 2 to send, 3 delivered, 4 other |
 | `expiryMillis(p)` | epoch millis of `expiryDate` for a ready-to-pickup parcel, else `0` |
+| `storedMillis(p)` | epoch millis of `storedDate`, else `0` |
 | `parseIsoMillis(s)` | tolerant ISO-8601 parser (`Z` or `±HH:MM`, optional millis) |
 | `expiryText(millis)` | `Expires <local time> · in <Xd Yh…>` or `· expired` |
 

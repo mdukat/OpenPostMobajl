@@ -184,8 +184,9 @@ within each group):
 4. **Other** — `UNDELIVERED`, `CLAIMED`, `OTHER`, anything unknown
 
 Delivered parcels (`DELIVERED`) are excluded from the main list and shown in
-the **Delivered parcels** view. The rank function also recognizes `DELIVERED`
-for that view.
+the **Delivered parcels** view, sorted by `storedDate` **newest first** (parcels
+without a valid `storedDate` are listed last). The rank function also
+recognizes `DELIVERED` for that view.
 
 The rank is computed from `statusGroup` first, then `status` as a fallback.
 This matches the app's own `ShipmentStatusGroup` enum
