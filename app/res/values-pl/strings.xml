@@ -15,7 +15,6 @@
     <string name="common_delivered_parcels">Odebrane paczki</string>
     <string name="common_licenses">Licencje</string>
     <string name="common_sign_out">Wyloguj się</string>
-    <string name="common_backend">Backend: %1$s</string>
     <string name="common_qr_code">Kod QR</string>
     <string name="common_tap_to_close">Dotknij gdziekolwiek, aby zamknąć</string>
     <string name="common_error">Błąd: %1$s</string>
@@ -90,6 +89,11 @@
     <!-- Ustawienia -->
     <string name="settings_language">Język</string>
     <string name="settings_language_description">Wybierz język aplikacji. Zmiana jest stosowana natychmiast.</string>
+    <string name="settings_backend">Backend</string>
+    <string name="settings_backend_description">Które API przesyłek ma być używane. Automatyczny najpierw próbuje endpointu PL (v4), potem globalnego.</string>
+    <string name="backend_auto">Automatyczny</string>
+    <string name="backend_v4">v4 (PL)</string>
+    <string name="backend_global">Globalny</string>
     <string name="settings_simplified">Tryb uproszczony</string>
     <string name="settings_simplified_description">Większy tekst, czytelniejsze przyciski i prosta lista paczek. Zalecane dla starszych użytkowników.</string>
 </resources>

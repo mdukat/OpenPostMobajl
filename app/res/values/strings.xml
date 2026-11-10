@@ -14,7 +14,6 @@
     <string name="common_delivered_parcels">Delivered parcels</string>
     <string name="common_licenses">Licenses</string>
     <string name="common_sign_out">Sign out</string>
-    <string name="common_backend">Backend: %1$s</string>
     <string name="common_qr_code">QR code</string>
     <string name="common_tap_to_close">Tap anywhere to close</string>
     <string name="common_error">Error: %1$s</string>
@@ -87,6 +86,11 @@
     <!-- Settings -->
     <string name="settings_language">Language</string>
     <string name="settings_language_description">Choose the app language. The change is applied immediately.</string>
+    <string name="settings_backend">Backend</string>
+    <string name="settings_backend_description">Which parcel API to use. Automatic tries the PL (v4) endpoint first, then the global one.</string>
+    <string name="backend_auto">Automatic</string>
+    <string name="backend_v4">v4 (PL)</string>
+    <string name="backend_global">Global</string>
     <string name="settings_simplified">Simplified mode</string>
     <string name="settings_simplified_description">Larger text, clearer buttons and a simple parcel list. Recommended for older users.</string>
 </resources>

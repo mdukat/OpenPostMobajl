@@ -27,7 +27,7 @@ MainActivity
    ├─ sidebar: Delivered parcels ──► DeliveredParcelsActivity ──► ParcelDetailActivity
    ├─ sidebar: Settings          ──► SettingsActivity
    ├─ sidebar: Licenses          ──► LicensesActivity
-   └─ sidebar: Refresh / Backend / Sign out (stay in MainActivity)
+   └─ sidebar: Refresh / Sign out (stay in MainActivity)
 ```
 
 There is no separate login activity: `MainActivity` hosts the OAuth `WebView`
@@ -102,7 +102,6 @@ Key methods:
 | `loadParcels` | background fetch + refresh, posts to `render`, saves cache |
 | `render` | **the list renderer** (see below) |
 | `updateCountdowns` / `syncCountdownTimer` / `onResume` / `onPause` | live expiry countdown: a 1 s `Handler` tick while the main view is resumed |
-| `cycleBackend` | cycles `auto → v4 → global`, saves, reloads |
 | `signOut` | deletes auth + cache, clears cookies, restarts login |
 | `showError` | writes `Error: …` into the status line |
 | `nowIso` | static ISO-8601 UTC helper reused by `ApiClient`/`ParcelCache` |
@@ -110,7 +109,7 @@ Key methods:
 
 Main panel layout (top to bottom): burger button, `status` `TextView`, a
 `ScrollView` containing the `list` `LinearLayout`. Sidebar buttons: **Refresh**,
-**Delivered parcels**, **Backend: …**, **Licenses**, **Sign out**.
+**Delivered parcels**, **Settings**, **Licenses**, **Sign out**.
 
 `render(res, cached)` is the single place that turns data into rows:
 
@@ -177,12 +176,15 @@ renders whatever group it is given.
 File: `app/src/com/openpostmobajl/SettingsActivity.java`
 
 Top bar (`← Back` + title), a `Spinner` language picker built from
-`LocaleHelper.CODES`/`LABELS` with a short description, and a **Simplified
-mode** `CheckBox` with its own description. Selecting a language saves it via
-`LocaleHelper.setLanguage`; toggling the checkbox saves it via
-`AppSettings.setSimplified`. Both call `recreate()`, so the screen updates
-immediately; other activities recreate on `onResume` when either setting
-changed. Extends `BaseActivity`. See [`LANGUAGES.md`](LANGUAGES.md).
+`LocaleHelper.CODES`/`LABELS`, a backend `Spinner` (`auto`/`v4`/`global`) that
+reads and writes `AuthState.backendPreference` via `AuthStore`, and a
+**Simplified mode** `CheckBox`. Each has a short description. Selecting a
+language saves it via `LocaleHelper.setLanguage`; toggling the checkbox saves
+it via `AppSettings.setSimplified`; the backend is saved to `auth.json`.
+Language and simplified mode call `recreate()` so the screen updates
+immediately; other activities recreate on `onResume` when either changed (and
+`MainActivity.onResume` picks up a changed backend). Extends `BaseActivity`.
+See [`LANGUAGES.md`](LANGUAGES.md).
 
 ### `DeliveredParcelsActivity`
 

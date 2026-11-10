@@ -53,7 +53,6 @@ public class MainActivity extends BaseActivity {
     private TextView status;
     private LinearLayout list;
     private WebView webView;
-    private Button backendBtn;
     private LinearLayout sidebar;
     private View scrim;
     private boolean sidebarOpen = false;
@@ -264,20 +263,6 @@ public class MainActivity extends BaseActivity {
         });
         sidebar.addView(delivered, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        if (!simplified) {
-            backendBtn = new Button(this);
-            backendBtn.setText(backendLabel());
-            backendBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    closeSidebar();
-                    cycleBackend();
-                }
-            });
-            sidebar.addView(backendBtn, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        }
 
         Button settings = new Button(this);
         settings.setText(R.string.common_settings);
@@ -610,32 +595,6 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private String backendLabel() {
-        String p = state.backendPreference == null ? "auto" : state.backendPreference;
-        return getString(R.string.common_backend, p);
-    }
-
-    private void cycleBackend() {
-        String p = state.backendPreference == null ? "auto" : state.backendPreference;
-        if ("auto".equals(p)) {
-            state.backendPreference = "v4";
-        } else if ("v4".equals(p)) {
-            state.backendPreference = "global";
-        } else {
-            state.backendPreference = "auto";
-        }
-        try {
-            AuthStore.save(this, state);
-        } catch (Exception e) {
-            showError(e);
-            return;
-        }
-        if (backendBtn != null) {
-            backendBtn.setText(backendLabel());
-        }
-        loadParcels();
-    }
-
     private void signOut() {
         closeSidebar();
         AuthStore.delete(this);
@@ -658,9 +617,6 @@ public class MainActivity extends BaseActivity {
         state = new AuthState();
         state.deviceUID = UUID.randomUUID().toString();
         state.createdAt = nowIso();
-        if (backendBtn != null) {
-            backendBtn.setText(backendLabel());
-        }
         list.removeAllViews();
         startLogin();
     }
@@ -676,6 +632,28 @@ public class MainActivity extends BaseActivity {
         super.onResume();
         resumed = true;
         syncCountdownTimer();
+        reloadBackendPreference();
+    }
+
+    /**
+     * The backend is chosen in Settings, which writes it to auth.json; pick it
+     * up here and refresh when it changed.
+     */
+    private void reloadBackendPreference() {
+        try {
+            String pref = AuthStore.load(this).backendPreference;
+            if (pref == null) {
+                pref = "auto";
+            }
+            String current = state.backendPreference == null ? "auto" : state.backendPreference;
+            if (!pref.equals(current)) {
+                state.backendPreference = pref;
+                if (state.authToken != null && state.authToken.length() > 0) {
+                    loadParcels();
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     @Override

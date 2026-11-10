@@ -109,6 +109,75 @@ public class SettingsActivity extends BaseActivity {
         content.addView(description, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        // ---- backend ----
+        TextView backendTitle = new TextView(this);
+        backendTitle.setText(R.string.settings_backend);
+        backendTitle.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+        backendTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+        backendTitle.setPadding(0, dp(16), 0, dp(8));
+        content.addView(backendTitle, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        final String[] backendCodes = {"auto", "v4", "global"};
+        String[] backendLabels = {
+                getString(R.string.backend_auto),
+                getString(R.string.backend_v4),
+                getString(R.string.backend_global)
+        };
+        AuthState authState;
+        try {
+            authState = AuthStore.load(this);
+        } catch (Exception e) {
+            authState = new AuthState();
+        }
+        final AuthState backendState = authState;
+        if (backendState.backendPreference == null) {
+            backendState.backendPreference = "auto";
+        }
+
+        Spinner backendSpinner = new Spinner(this);
+        ArrayAdapter<String> backendAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, backendLabels);
+        backendAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        backendSpinner.setAdapter(backendAdapter);
+        int backendIndex = 0;
+        for (int i = 0; i < backendCodes.length; i++) {
+            if (backendCodes[i].equals(backendState.backendPreference)) {
+                backendIndex = i;
+                break;
+            }
+        }
+        backendSpinner.setSelection(backendIndex);
+        backendSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String code = backendCodes[position];
+                if (!code.equals(backendState.backendPreference)) {
+                    backendState.backendPreference = code;
+                    if (AuthStore.exists(SettingsActivity.this)) {
+                        try {
+                            AuthStore.save(SettingsActivity.this, backendState);
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        content.addView(backendSpinner, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView backendDescription = new TextView(this);
+        backendDescription.setText(R.string.settings_backend_description);
+        backendDescription.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+        backendDescription.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+        backendDescription.setPadding(0, dp(8), 0, dp(8));
+        content.addView(backendDescription, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
         View separator = new View(this);
         separator.setBackgroundColor(Color.LTGRAY);
         content.addView(separator, new LinearLayout.LayoutParams(

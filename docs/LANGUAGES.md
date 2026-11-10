@@ -160,3 +160,4 @@ Keys are grouped by screen in the resource files:
 | `licenses_*` | `LicensesActivity` |
 | `status_*` | translated package statuses/groups for simplified mode |
 | `settings_*` | `SettingsActivity` |
+| `backend_*` | backend picker labels (`auto`/`v4`/`global`) |

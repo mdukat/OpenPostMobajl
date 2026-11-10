@@ -131,8 +131,7 @@ QR generation uses the ZXing core jar installed by `bootstrap.sh` into
 - **Main view:** a top bar with a burger button (`≡`) on the left and the
   `OpenPostMobajl` title, then the status line and the parcel list.
 - **Sidebar:** tap the burger to slide in a panel with **Refresh**,
-  **Delivered parcels**, **Backend: auto/v4/global**, **Settings**,
-  **Licenses**, and **Sign out**. Close it with the `×` button, by tapping the
+  **Delivered parcels**, **Settings**, **Licenses**, and **Sign out**. Close it with the `×` button, by tapping the
   dimmed scrim, or with the system Back button.
 - The status line and parcel list always stay in the main view.
 
@@ -144,8 +143,7 @@ map, and instructions for adding a new view.
 An accessibility mode for older users, toggled with the **Simplified mode**
 checkbox in **Settings** (off by default). When enabled it:
 
-- hides the status line (errors are still shown), the **Backend** selector and
-  **Sign out**;
+- hides the status line (errors are still shown) and **Sign out**;
 - turns the burger into a **Menu** button and adds a same-sized **Refresh**
   button next to it in the top bar (both a little larger, for easier tapping);
 - shows every list row as `Parcel: <sender name>` followed by the translated
@@ -223,7 +221,8 @@ This matches the app's own `ShipmentStatusGroup` enum
 
 ## Backends
 
-The app has a **Backend** button that cycles `auto` → `v4` → `global`:
+The backend is chosen in **Settings → Backend** (`Automatic`, `v4 (PL)` or
+`Global`):
 
 | Preference | Request | Notes |
 |---|---|---|
