@@ -3,15 +3,18 @@ package com.openpostmobajl;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * Shared parcel list helpers: row text, sorting, and delivered filtering.
@@ -52,6 +55,69 @@ final class ParcelUi {
     static String senderName(JSONObject p) {
         JSONObject o = p.optJSONObject("sender");
         return o == null ? "" : o.optString("name", "");
+    }
+
+    /**
+     * Epoch millis of a ready-to-pickup parcel's {@code expiryDate}, or 0 when
+     * the parcel is not ready to pick up or has no valid date.
+     */
+    static long expiryMillis(JSONObject p) {
+        if (!isReadyToPickup(p)) {
+            return 0;
+        }
+        return parseIsoMillis(p.optString("expiryDate", ""));
+    }
+
+    static long parseIsoMillis(String s) {
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+        String[] patterns = {
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                "yyyy-MM-dd'T'HH:mm:ssXXX"
+        };
+        for (int i = 0; i < patterns.length; i++) {
+            try {
+                SimpleDateFormat f = new SimpleDateFormat(patterns[i], Locale.US);
+                f.setTimeZone(TimeZone.getTimeZone("UTC"));
+                f.setLenient(false);
+                return f.parse(s).getTime();
+            } catch (Exception ignored) {
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Human-readable expiry: the local date/time plus the remaining time, for
+     * example {@code "Expires 2026-12-24 08:37 · in 3d 4h"} or
+     * {@code "Expires 2026-12-24 08:37 · expired"}.
+     */
+    static String expiryText(long expiryMillis) {
+        String when = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
+                .format(new Date(expiryMillis));
+        long remaining = expiryMillis - System.currentTimeMillis();
+        if (remaining <= 0) {
+            return "Expires " + when + " \u00b7 expired";
+        }
+        long totalSec = remaining / 1000;
+        long days = totalSec / 86400;
+        long hours = (totalSec % 86400) / 3600;
+        long minutes = (totalSec % 3600) / 60;
+        long seconds = totalSec % 60;
+        String left;
+        if (days > 0) {
+            left = days + "d " + hours + "h";
+        } else if (hours > 0) {
+            left = hours + "h " + minutes + "m";
+        } else if (minutes > 0) {
+            left = minutes + "m " + seconds + "s";
+        } else {
+            left = seconds + "s";
+        }
+        return "Expires " + when + " \u00b7 in " + left;
     }
 
     /**

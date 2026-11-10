@@ -99,6 +99,7 @@ Key methods:
 | `startLogin` / `showWebView` / `handleUrl` / `exchangeCode` | OAuth flow; intercepts the redirect, exchanges the code, saves auth, then loads parcels |
 | `loadParcels` | background fetch + refresh, posts to `render`, saves cache |
 | `render` | **the list renderer** (see below) |
+| `updateCountdowns` / `syncCountdownTimer` / `onResume` / `onPause` | live expiry countdown: a 1 s `Handler` tick while the main view is resumed |
 | `cycleBackend` | cycles `auto → v4 → global`, saves, reloads |
 | `signOut` | deletes auth + cache, clears cookies, restarts login |
 | `showError` | writes `Error: …` into the status line |
@@ -118,6 +119,10 @@ Main panel layout (top to bottom): burger button, `status` `TextView`, a
 4. For each `ParcelEntry`: group rows use `ParcelUi.multiCompartmentRowText`
    and open `MultiCompartmentActivity`; single rows use `ParcelUi.rowText` and
    open `ParcelDetailActivity`.
+5. Ready-to-pickup rows (single or group) append a second line with the expiry
+   countdown from `ParcelUi.expiryText`. The row's base text, view and expiry
+   are kept in parallel lists so `updateCountdowns` can refresh only the
+   countdown line every second while the activity is resumed.
 
 When there are no parcels it renders a single "No parcels found." row. Rows are
 `TextView`s with a 1 px `View` divider.
@@ -206,6 +211,9 @@ view. Static, package-private, no state.
 | `grouped(sorted)` | collapses duplicate presentable uuids into `ParcelEntry` groups |
 | `sorted(parcels, deliveredOnly)` | filters delivered/undelivered, stable-sorts by `rank` |
 | `rank(p)` | 0 ready-to-collect, 1 in transit, 2 to send, 3 delivered, 4 other |
+| `expiryMillis(p)` | epoch millis of `expiryDate` for a ready-to-pickup parcel, else `0` |
+| `parseIsoMillis(s)` | tolerant ISO-8601 parser (`Z` or `±HH:MM`, optional millis) |
+| `expiryText(millis)` | `Expires <local time> · in <Xd Yh…>` or `· expired` |
 
 `grouped` only groups a uuid seen on **more than one** parcel, preserves scan
 order, and makes the first member the group representative.
@@ -213,7 +221,8 @@ order, and makes the first member the group representative.
 ### `ParcelEntry` — `app/src/com/openpostmobajl/ParcelEntry.java`
 
 One list row: `first` (representative parcel), `parcels` (all members),
-`multiUuid` (`null` for a normal row), and `isMulti()`. Constructed via
+`multiUuid` (`null` for a normal row), `isMulti()`, and `expiryMillis()` (the
+earliest valid expiry among members, or `0`). Constructed via
 `ParcelEntry.single(parcel)` or `ParcelEntry.group(members, uuid)`.
 
 ### `QrCode` — `app/src/com/openpostmobajl/QrCode.java`
@@ -243,6 +252,9 @@ and margin 2. Returns `null` on failure; callers must null-check.
 - **Config changes.** Activities declare `configChanges` for
   orientation/screen-size/keyboard, so `onCreate` is not re-run on rotation and
   there is no re-render path. Rebuild state in `onCreate` only.
+- **Live updates.** The only periodic UI update is the expiry countdown in
+  `MainActivity` (a `Handler` posting every 1 s). Start/stop it with
+  `onResume`/`onPause`; never leave timers running in the background.
 - **Defensive parsing.** Views are built from JSON that may be missing fields;
   use `optString`/`optJSONObject`/`optBoolean` and null-check before use.
 
@@ -287,6 +299,8 @@ and margin 2. Returns `null` on failure; callers must null-check.
 | list ordering | `ParcelUi.rank` |
 | single-row text | `ParcelUi.rowText` |
 | multi-compartment grouping or name | `ParcelUi.grouped` / `multiCompartmentUuid` / `multiCompartmentName` / `multiCompartmentRowText` |
+| expiry countdown format or parsing | `ParcelUi.expiryMillis` / `parseIsoMillis` / `expiryText` |
+| countdown refresh / lifecycle | `MainActivity` `countdownTick` / `updateCountdowns` / `onResume` / `onPause` |
 | what a detail screen shows | `ParcelDetailActivity.onCreate` |
 | what a group screen shows | `MultiCompartmentActivity.onCreate` |
 | when a QR is shown | `ParcelDetailActivity` / `MultiCompartmentActivity` QR blocks |
@@ -307,6 +321,8 @@ and margin 2. Returns `null` on failure; callers must null-check.
   They appear only in `DeliveredParcelsActivity`, which reads the cache.
 - **Grouping is main-list only** and ready-to-pickup only. Delivered and
   in-transit parcels are never grouped.
+- **`expiryDate` is optional.** Only ready-to-pickup entries with a valid date
+  get a countdown; a missing or unparseable date is silently ignored.
 - **QR payloads never come from the network bitmap**; only the `qrCode` string
   is used and the image is generated locally.
 - **Intent extra names are part of the contract** between screens:

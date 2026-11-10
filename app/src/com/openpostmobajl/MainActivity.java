@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -25,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -53,6 +56,21 @@ public class MainActivity extends Activity {
     private boolean sidebarOpen = false;
     private AuthState state;
     private boolean codeHandled = false;
+
+    // Live countdown to expiryDate for the rendered ready-to-pickup rows.
+    private final List<TextView> rowViews = new ArrayList<TextView>();
+    private final List<String> rowBase = new ArrayList<String>();
+    private final List<Long> rowExpiry = new ArrayList<Long>();
+    private boolean hasCountdown = false;
+    private boolean resumed = false;
+    private final Handler countdownHandler = new Handler(Looper.getMainLooper());
+    private final Runnable countdownTick = new Runnable() {
+        @Override
+        public void run() {
+            updateCountdowns();
+            countdownHandler.postDelayed(this, 1000);
+        }
+    };
 
     private static final int SIDEBAR_WIDTH_DP = 280;
 
@@ -437,6 +455,10 @@ public class MainActivity extends Activity {
 
     private void render(ApiClient.ParcelResult res, boolean cached) {
         list.removeAllViews();
+        rowViews.clear();
+        rowBase.clear();
+        rowExpiry.clear();
+        hasCountdown = false;
 
         List<JSONObject> sorted = ParcelUi.sorted(res.parcels, false);
         List<ParcelEntry> items = ParcelUi.grouped(sorted);
@@ -454,16 +476,18 @@ public class MainActivity extends Activity {
             tv.setText("No parcels found.");
             tv.setPadding(0, dp(8), 0, dp(8));
             list.addView(tv);
+            syncCountdownTimer();
             return;
         }
 
         for (int i = 0; i < items.size(); i++) {
             final ParcelEntry entry = items.get(i);
-            String text = entry.isMulti()
+            String base = entry.isMulti()
                     ? ParcelUi.multiCompartmentRowText(entry)
                     : ParcelUi.rowText(entry.first);
+            final long expiry = entry.expiryMillis();
             TextView tv = new TextView(this);
-            tv.setText(text);
+            tv.setText(expiry > 0 ? base + "\n" + ParcelUi.expiryText(expiry) : base);
             tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             tv.setPadding(0, dp(12), 0, dp(12));
@@ -492,10 +516,36 @@ public class MainActivity extends Activity {
             });
             list.addView(tv);
 
+            rowViews.add(tv);
+            rowBase.add(base);
+            rowExpiry.add(Long.valueOf(expiry));
+            if (expiry > 0) {
+                hasCountdown = true;
+            }
+
             View divider = new View(this);
             divider.setBackgroundColor(Color.LTGRAY);
             list.addView(divider, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, 1));
+        }
+
+        syncCountdownTimer();
+    }
+
+    private void updateCountdowns() {
+        for (int i = 0; i < rowViews.size(); i++) {
+            long expiry = rowExpiry.get(i).longValue();
+            if (expiry > 0) {
+                rowViews.get(i).setText(
+                        rowBase.get(i) + "\n" + ParcelUi.expiryText(expiry));
+            }
+        }
+    }
+
+    private void syncCountdownTimer() {
+        countdownHandler.removeCallbacks(countdownTick);
+        if (resumed && hasCountdown) {
+            countdownHandler.post(countdownTick);
         }
     }
 
@@ -559,6 +609,20 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        resumed = true;
+        syncCountdownTimer();
+    }
+
+    @Override
+    protected void onPause() {
+        resumed = false;
+        countdownHandler.removeCallbacks(countdownTick);
+        super.onPause();
+    }
+
+    @Override
     public void onBackPressed() {
         if (sidebarOpen) {
             closeSidebar();
@@ -573,6 +637,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        countdownHandler.removeCallbacks(countdownTick);
         if (webView != null) {
             webView.stopLoading();
             webView.destroy();

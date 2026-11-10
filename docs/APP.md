@@ -101,6 +101,14 @@ into a single logical row named `MULTISKRYTKA <uuid-section>`, where
 shows the number of parcels and the usual pickup point / sender. A
 `multiCompartment` uuid seen on only one parcel is left as a normal row.
 
+Ready-to-pickup rows also show a live countdown to the parcel's `expiryDate`
+as a second line, for example `Expires 2026-12-24 08:37 · in 3d 4h`: the local
+`expiryDate` plus the remaining time (`Xd Yh` → `Xh Ym` → `Xm Ys`), or
+`expired` once it has passed. A `MULTISKRYTKA` group uses the earliest
+`expiryDate` among its parcels. Rows without a valid `expiryDate` show no
+countdown. The countdown refreshes once per second while the main view is in
+the foreground.
+
 Tapping a grouped row opens `MultiCompartmentActivity`, which shows a single QR
 code (taken from the first parcel in scan order) and the list of parcels the
 group contains; each contained parcel can be tapped to open its own
