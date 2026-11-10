@@ -139,13 +139,17 @@ File: `app/src/com/openpostmobajl/ParcelDetailActivity.java`
 Shows one parcel. In `onCreate`:
 
 - Top bar: `← Back` + `Parcel <last6>`.
+- Top bar: `← Back` + `Parcel <last6>`; in simplified mode the title is
+  omitted.
 - QR block: rendered when `statusGroup` is `DELIVERED`, or the parcel is
   ready-to-pickup (`statusGroup` `TO_PICKUP` / `status` `READY_TO_PICKUP`),
-  **and** `qrCode` is non-empty. Tapping opens `QrFullscreenActivity`.
+  **and** `qrCode` is non-empty. Tapping opens `QrFullscreenActivity`. In
+  simplified mode the "QR code" label and the raw payload are hidden, leaving
+  only the image plus the "tap to open full screen" hint.
 - Summary: normally shipment number, status + status group, pickup point and
   sender in one `TextView`; in **simplified mode** separate labeled blocks
-  (`addBlock`) for parcel number, translated status, pickup-point details and
-  sender, plus a "tap the QR code to open it full screen" hint.
+  (`addBlock`) for pickup code (`ParcelUi.pickupCode`), parcel number,
+  translated status, pickup-point details and sender.
 - Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
   (hidden in simplified mode).
 

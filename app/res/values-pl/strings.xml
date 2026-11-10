@@ -37,6 +37,7 @@
     <string name="detail_pickup_point">Punkt odbioru: %1$s</string>
     <string name="detail_sender">Nadawca: %1$s</string>
     <string name="detail_error">Nie udało się odczytać danych paczki.</string>
+    <string name="detail_label_pickup_code">Kod odbioru</string>
     <string name="detail_label_number">Numer paczki</string>
     <string name="detail_label_status">Status</string>
     <string name="detail_label_pickup_point">Punkt odbioru</string>

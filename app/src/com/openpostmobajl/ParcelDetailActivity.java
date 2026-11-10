@@ -57,13 +57,15 @@ public class ParcelDetailActivity extends BaseActivity {
         topBar.addView(back, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        TextView title = new TextView(this);
-        title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
-        title.setPadding(dp(8), 0, 0, 0);
-        title.setText(getString(R.string.detail_title, ParcelUi.last6(parcel)));
-        topBar.addView(title, new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        if (!simplified) {
+            TextView title = new TextView(this);
+            title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+            title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            title.setPadding(dp(8), 0, 0, 0);
+            title.setText(getString(R.string.detail_title, ParcelUi.last6(parcel)));
+            topBar.addView(title, new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        }
 
         root.addView(topBar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -84,12 +86,15 @@ public class ParcelDetailActivity extends BaseActivity {
             if (("DELIVERED".equalsIgnoreCase(group) || readyToPickup) && qr.length() > 0) {
                 Bitmap bmp = QrCode.generate(qr, 600);
                 if (bmp != null) {
-                    TextView qrLabel = new TextView(this);
-                    qrLabel.setText(R.string.common_qr_code);
-                    qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-                    qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
-                    content.addView(qrLabel, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (!simplified) {
+                        TextView qrLabel = new TextView(this);
+                        qrLabel.setText(R.string.common_qr_code);
+                        qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                        qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+                        content.addView(qrLabel, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
 
                     ImageView qrView = new ImageView(this);
                     qrView.setImageBitmap(bmp);
@@ -123,14 +128,17 @@ public class ParcelDetailActivity extends BaseActivity {
                                 ViewGroup.LayoutParams.WRAP_CONTENT));
                     }
 
-                    TextView qrText = new TextView(this);
-                    qrText.setText(qr);
-                    qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
-                    qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
-                    qrText.setTypeface(Typeface.MONOSPACE);
-                    qrText.setTextIsSelectable(true);
-                    content.addView(qrText, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (!simplified) {
+                        TextView qrText = new TextView(this);
+                        qrText.setText(qr);
+                        qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
+                        qrText.setTypeface(Typeface.MONOSPACE);
+                        qrText.setTextIsSelectable(true);
+                        content.addView(qrText, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
                 }
             }
 
@@ -140,6 +148,10 @@ public class ParcelDetailActivity extends BaseActivity {
             String pickup = ParcelUi.pickupDetails(parcel);
             if (simplified) {
                 // Separate, labeled blocks are easier to read than one big block.
+                String pickupCode = ParcelUi.pickupCode(parcel);
+                if (pickupCode.length() > 0) {
+                    addBlock(content, R.string.detail_label_pickup_code, pickupCode);
+                }
                 addBlock(content, R.string.detail_label_number, number);
                 addBlock(content, R.string.detail_label_status,
                         ParcelUi.statusText(this, status, group));

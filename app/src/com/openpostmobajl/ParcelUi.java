@@ -54,6 +54,23 @@ final class ParcelUi {
         return o == null ? "" : o.optString("name", "");
     }
 
+    /**
+     * Pickup code: {@code openCode}, falling back to the last {@code |}-separated
+     * segment of the {@code qrCode} payload (e.g. {@code P|+48...|123456}).
+     */
+    static String pickupCode(JSONObject p) {
+        String openCode = p.optString("openCode", "");
+        if (openCode.length() > 0) {
+            return openCode;
+        }
+        String qr = p.optString("qrCode", "");
+        int bar = qr.lastIndexOf('|');
+        if (bar >= 0 && bar + 1 < qr.length()) {
+            return qr.substring(bar + 1);
+        }
+        return qr;
+    }
+
     static String senderName(JSONObject p) {
         JSONObject o = p.optJSONObject("sender");
         return o == null ? "" : o.optString("name", "");

@@ -36,6 +36,7 @@
     <string name="detail_pickup_point">Pickup point: %1$s</string>
     <string name="detail_sender">Sender: %1$s</string>
     <string name="detail_error">Could not read parcel data.</string>
+    <string name="detail_label_pickup_code">Pickup code</string>
     <string name="detail_label_number">Parcel number</string>
     <string name="detail_label_status">Status</string>
     <string name="detail_label_pickup_point">Pickup point</string>
