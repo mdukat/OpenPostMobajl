@@ -128,6 +128,9 @@ QR generation uses the ZXing core jar installed by `bootstrap.sh` into
   with the system Back button.
 - The status line and parcel list always stay in the main view.
 
+See [`VIEWS.md`](VIEWS.md) for a per-screen code reference, the navigation
+map, and instructions for adding a new view.
+
 ## Cache
 
 The last successful parcel list is saved to `parcels.json` in the app's files

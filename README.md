@@ -190,6 +190,7 @@ build-debug.sh                        debug APK
 build-release.sh                      signed release APK
 build.sh                              debug wrapper
 docs/APP.md                           app details and usage
+docs/VIEWS.md                         screen/view reference for contributors
 docs/PARCEL-SCHEMA.md                 parcel response schema
 docs/FLOW.md                          auth + parcel protocol reference
 ```
@@ -201,6 +202,8 @@ Generated and ignored: `out/`, `libs/`, `tools/root/`, `tools/android-sdk/`,
 
 - [`docs/APP.md`](docs/APP.md) — app behavior, UI, cache, security, and
   troubleshooting.
+- [`docs/VIEWS.md`](docs/VIEWS.md) — every screen, what it shows, where it
+  lives in code, navigation, and how to add a new view.
 - [`docs/PARCEL-SCHEMA.md`](docs/PARCEL-SCHEMA.md) — the v4 parcel response
   schema and status groups.
 - [`docs/FLOW.md`](docs/FLOW.md) — the language-agnostic OAuth + parcel flow
