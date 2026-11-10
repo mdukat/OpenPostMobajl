@@ -141,7 +141,7 @@ map, and instructions for adding a new view.
 ## Simplified mode
 
 An accessibility mode for older users, toggled with the **Simplified mode**
-checkbox in **Settings** (off by default). When enabled it:
+checkbox in **Settings** (on by default). When enabled it:
 
 - hides the status line (errors are still shown) and **Sign out**;
 - turns the burger into a **Menu** button and adds a same-sized **Refresh**

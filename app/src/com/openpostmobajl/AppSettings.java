@@ -22,8 +22,9 @@ final class AppSettings {
     private AppSettings() {
     }
 
+    /** Simplified mode is ON by default, so new users get the accessible UI. */
     static boolean isSimplified(Context ctx) {
-        return prefs(ctx).getBoolean(KEY_SIMPLIFIED, false);
+        return prefs(ctx).getBoolean(KEY_SIMPLIFIED, true);
     }
 
     static void setSimplified(Context ctx, boolean enabled) {

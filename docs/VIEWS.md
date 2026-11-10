@@ -125,7 +125,7 @@ Main panel layout (top to bottom): burger button, `status` `TextView`, a
    are kept in parallel lists so `updateCountdowns` can refresh only the
    countdown line every second while the activity is resumed.
 6. In **simplified mode** the row text becomes `Parcel: <sender>` (see
-   `MainActivity.simplifiedRowText`), rows get a border via
+   `ParcelUi.simplifiedRowText`), rows get a border via
    `Ui.applyBorderedRow`, dividers are skipped, and the status line is hidden
    (errors re-show it).
 
