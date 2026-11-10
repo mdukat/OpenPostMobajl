@@ -96,9 +96,11 @@ Each list row shows, in order:
 
 Tapping a row opens `ParcelDetailActivity`, which shows:
 
-- a locally generated QR code at the top for delivered parcels
-  (content = the parcel's `qrCode` field); tap it to open fullscreen at
-  maximum screen brightness,
+- a locally generated QR code at the top for delivered parcels and for
+  ready-to-pickup parcels (`statusGroup` `TO_PICKUP` / `status`
+  `READY_TO_PICKUP`) whenever the JSON carries a non-empty `qrCode` field
+  (content = that field); tap it to open fullscreen at maximum screen
+  brightness,
 - a short summary (shipment, status, pickup point, sender),
 - the complete backend JSON.
 

@@ -20,7 +20,7 @@ import org.json.JSONObject;
 
 /**
  * Full parcel view. Shows a locally generated QR code at the top for delivered
- * parcels, a short summary, and the complete backend JSON.
+ * and ready-to-pickup parcels, a short summary, and the complete backend JSON.
  */
 public class ParcelDetailActivity extends Activity {
 
@@ -74,10 +74,13 @@ public class ParcelDetailActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         if (parcel != null) {
-            // ---- QR code for delivered parcels ----
+            // ---- QR code for delivered / ready-to-pickup parcels ----
             String group = parcel.optString("statusGroup", "");
+            String status = parcel.optString("status", "");
             String qr = parcel.optString("qrCode", "");
-            if ("DELIVERED".equalsIgnoreCase(group) && qr.length() > 0) {
+            boolean readyToPickup = "TO_PICKUP".equalsIgnoreCase(group)
+                    || "READY_TO_PICKUP".equalsIgnoreCase(status);
+            if (("DELIVERED".equalsIgnoreCase(group) || readyToPickup) && qr.length() > 0) {
                 Bitmap bmp = QrCode.generate(qr, 600);
                 if (bmp != null) {
                     TextView qrLabel = new TextView(this);
