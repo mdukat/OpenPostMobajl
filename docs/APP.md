@@ -154,11 +154,11 @@ checkbox in **Settings** (off by default). When enabled it:
   `ParcelUi.statusText`;
 - hides the top **Parcel `<number>`** title, the **QR code** label and the raw
   QR payload; keeps the QR image with a "tap to open full screen" hint;
-- splits the detail screen into separate labeled blocks — **Pickup code**
-  (`openCode`, falling back to the last segment of the QR payload), **Parcel
-  number**, translated **Status**, **Pickup point** (with
-  `locationDescription`, `openingHours` and `addressDetails`) and **Sender** —
-  instead of one block;
+- splits the detail screen into separate labeled blocks — **Sender** first
+  (right below the QR code), then **Pickup code** (`openCode`, falling back to
+  the last segment of the QR payload), **Parcel number**, translated **Status**
+  and **Pickup point** (with `locationDescription`, `openingHours` and
+  `addressDetails`) — instead of one block;
 - hides the raw JSON block on the parcel detail screen;
 - scales all text up (font scale ×1.3, on top of the system setting).
 

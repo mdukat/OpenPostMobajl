@@ -148,8 +148,9 @@ Shows one parcel. In `onCreate`:
   only the image plus the "tap to open full screen" hint.
 - Summary: normally shipment number, status + status group, pickup point and
   sender in one `TextView`; in **simplified mode** separate labeled blocks
-  (`addBlock`) for pickup code (`ParcelUi.pickupCode`), parcel number,
-  translated status, pickup-point details and sender.
+  (`addBlock`) for sender (first, below the QR code), pickup code
+  (`ParcelUi.pickupCode`), parcel number, translated status and pickup-point
+  details.
 - Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
   (hidden in simplified mode).
 

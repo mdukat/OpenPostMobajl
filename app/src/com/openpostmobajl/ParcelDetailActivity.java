@@ -148,6 +148,8 @@ public class ParcelDetailActivity extends BaseActivity {
             String pickup = ParcelUi.pickupDetails(parcel);
             if (simplified) {
                 // Separate, labeled blocks are easier to read than one big block.
+                // Sender first, right below the QR code.
+                addBlock(content, R.string.detail_label_sender, ParcelUi.senderName(parcel));
                 String pickupCode = ParcelUi.pickupCode(parcel);
                 if (pickupCode.length() > 0) {
                     addBlock(content, R.string.detail_label_pickup_code, pickupCode);
@@ -157,7 +159,6 @@ public class ParcelDetailActivity extends BaseActivity {
                         ParcelUi.statusText(this, status, group));
                 addBlock(content, R.string.detail_label_pickup_point,
                         pickup.length() == 0 ? ParcelUi.pointName(parcel) : pickup);
-                addBlock(content, R.string.detail_label_sender, ParcelUi.senderName(parcel));
             } else {
                 TextView summary = new TextView(this);
                 summary.setTextColor(Color.rgb(0x11, 0x11, 0x11));
