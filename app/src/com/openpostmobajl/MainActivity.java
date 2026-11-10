@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
+import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -530,11 +531,18 @@ public class MainActivity extends Activity {
         ParcelCache.delete(this);
         if (webView != null) {
             webView.stopLoading();
+            webView.clearCache(true);
+            webView.clearHistory();
+            webView.clearFormData();
             root.removeView(webView);
             webView.destroy();
             webView = null;
         }
-        CookieManager.getInstance().removeAllCookies(null);
+        // Drop everything the login WebView may have persisted, not just cookies.
+        WebStorage.getInstance().deleteAllData();
+        CookieManager cm = CookieManager.getInstance();
+        cm.removeAllCookies(null);
+        cm.flush();
         codeHandled = false;
         state = new AuthState();
         state.deviceUID = UUID.randomUUID().toString();
