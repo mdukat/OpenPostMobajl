@@ -1,4 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default (English) translations. Polish lives in app/res/values-pl/strings.xml.
+  See docs/LANGUAGES.md for how to change these or add a new language.
+-->
 <resources>
     <string name="app_name">OpenPostMobajl</string>
+
+    <!-- Shared labels -->
+    <string name="common_back">← Back</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_menu">Menu</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_delivered_parcels">Delivered parcels</string>
+    <string name="common_licenses">Licenses</string>
+    <string name="common_sign_out">Sign out</string>
+    <string name="common_backend">Backend: %1$s</string>
+    <string name="common_qr_code">QR code</string>
+    <string name="common_tap_to_close">Tap anywhere to close</string>
+    <string name="common_error">Error: %1$s</string>
+
+    <!-- Main screen -->
+    <string name="main_status_ready">Ready.</string>
+    <string name="main_status_updating">Updating…</string>
+    <string name="main_status_loading">Loading parcels…</string>
+    <string name="main_status_cached">Cached %1$s | parcels: %2$d — updating…</string>
+    <string name="main_status_backend">Backend: %1$s (pref %2$s) | parcels: %3$d</string>
+    <string name="main_no_parcels">No parcels found.</string>
+    <string name="main_login_prompt">Log in with your phone number and SMS code. The app continues automatically after the redirect.</string>
+    <string name="main_exchanging_code">Exchanging authorization code…</string>
+
+    <!-- Parcel detail -->
+    <string name="detail_title">Parcel %1$s</string>
+    <string name="detail_shipment">Shipment: %1$s</string>
+    <string name="detail_status">Status: %1$s (%2$s)</string>
+    <string name="detail_pickup_point">Pickup point: %1$s</string>
+    <string name="detail_sender">Sender: %1$s</string>
+    <string name="detail_error">Could not read parcel data.</string>
+
+    <!-- Multi-compartment group -->
+    <string name="multi_name">MULTISKRYTKA %1$s</string>
+    <plurals name="multi_parcels">
+        <item quantity="one">%d parcel</item>
+        <item quantity="other">%d parcels</item>
+    </plurals>
+
+    <!-- Expiry countdown -->
+    <string name="expires_in">Expires %1$s · in %2$s</string>
+    <string name="expires_past">Expires %1$s · expired</string>
+
+    <!-- Delivered parcels -->
+    <string name="delivered_title">Delivered parcels</string>
+    <string name="delivered_count">Delivered parcels: %1$d</string>
+    <string name="delivered_empty">No delivered parcels.</string>
+
+    <!-- Licenses -->
+    <string name="licenses_project">PROJECT LICENSE (MIT)</string>
+    <string name="licenses_third_party">THIRD-PARTY LICENSES</string>
+    <string name="licenses_load_error">Could not load %1$s: %2$s</string>
+
+    <!-- Settings -->
+    <string name="settings_language">Language</string>
+    <string name="settings_language_description">Choose the app language. The change is applied immediately.</string>
 </resources>

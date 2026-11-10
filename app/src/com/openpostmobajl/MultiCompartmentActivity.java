@@ -23,7 +23,7 @@ import org.json.JSONObject;
  * first parcel in scan order, followed by the list of parcels the group
  * contains. Each contained parcel can be tapped to open its own detail view.
  */
-public class MultiCompartmentActivity extends Activity {
+public class MultiCompartmentActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +52,7 @@ public class MultiCompartmentActivity extends Activity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button back = new Button(this);
-        back.setText("\u2190 Back");
+        back.setText(R.string.common_back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,7 +66,7 @@ public class MultiCompartmentActivity extends Activity {
         title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
         title.setPadding(dp(8), 0, 0, 0);
-        title.setText(ParcelUi.multiCompartmentName(uuid));
+        title.setText(ParcelUi.multiCompartmentName(this, uuid));
         topBar.addView(title, new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
@@ -88,7 +88,7 @@ public class MultiCompartmentActivity extends Activity {
                 Bitmap bmp = QrCode.generate(qr, 600);
                 if (bmp != null) {
                     TextView qrLabel = new TextView(this);
-                    qrLabel.setText("QR code");
+                    qrLabel.setText(R.string.common_qr_code);
                     qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
                     qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
                     content.addView(qrLabel, new LinearLayout.LayoutParams(
@@ -130,7 +130,8 @@ public class MultiCompartmentActivity extends Activity {
 
         // ---- contained parcels ----
         TextView section = new TextView(this);
-        section.setText(parcels.length() == 1 ? "1 parcel" : parcels.length() + " parcels");
+        section.setText(getResources().getQuantityString(
+                R.plurals.multi_parcels, parcels.length(), parcels.length()));
         section.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         section.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
         section.setPadding(0, dp(8), 0, dp(8));

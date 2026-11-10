@@ -25,6 +25,7 @@ MainActivity
    │                              ├─ QR tap        ──► QrFullscreenActivity
    │                              └─ contained row ──► ParcelDetailActivity
    ├─ sidebar: Delivered parcels ──► DeliveredParcelsActivity ──► ParcelDetailActivity
+   ├─ sidebar: Settings          ──► SettingsActivity
    ├─ sidebar: Licenses          ──► LicensesActivity
    └─ sidebar: Refresh / Backend / Sign out (stay in MainActivity)
 ```
@@ -41,6 +42,7 @@ as an overlay on top of the list.
 | `MainActivity` | `MainActivity.java` | Launcher. Login WebView + parcel list + sidebar. | — |
 | `ParcelDetailActivity` | `ParcelDetailActivity.java` | One parcel: QR, summary, full JSON. | `parcel` = single JSON object string |
 | `MultiCompartmentActivity` | `MultiCompartmentActivity.java` | A "MULTISKRYTKA" group: one QR + member list. | `parcels` = JSON array string, `uuid` = group uuid |
+| `SettingsActivity` | `SettingsActivity.java` | Language picker; applies immediately. | — |
 | `DeliveredParcelsActivity` | `DeliveredParcelsActivity.java` | Delivered parcels from the cache only (no network). | — |
 | `QrFullscreenActivity` | `QrFullscreenActivity.java` | Fullscreen QR at max brightness; tap to close. | `qr` = payload string |
 | `LicensesActivity` | `LicensesActivity.java` | Bundled `LICENSE.md` + `THIRD-PARTY-LICENSES.md`. | — |
@@ -162,6 +164,16 @@ in scan order) and `uuid`. In `onCreate`:
 Grouping rules live in `ParcelUi` (see below), not here. This activity only
 renders whatever group it is given.
 
+### `SettingsActivity`
+
+File: `app/src/com/openpostmobajl/SettingsActivity.java`
+
+Top bar (`← Back` + title) and a `Spinner` language picker built from
+`LocaleHelper.CODES`/`LABELS`, followed by a short description. Selecting a
+language saves it via `LocaleHelper.setLanguage` and calls `recreate()`, so the
+screen relabels immediately; other activities recreate on `onResume` when the
+language changed. Extends `BaseActivity`. See [`LANGUAGES.md`](LANGUAGES.md).
+
 ### `DeliveredParcelsActivity`
 
 File: `app/src/com/openpostmobajl/DeliveredParcelsActivity.java`
@@ -232,6 +244,14 @@ earliest valid expiry among members, or `0`). Constructed via
 `QrCode.generate(content, size)` builds an ARGB bitmap with ZXing core, UTF-8
 and margin 2. Returns `null` on failure; callers must null-check.
 
+### `BaseActivity` / `LocaleHelper`
+
+`BaseActivity` (`app/src/com/openpostmobajl/BaseActivity.java`) is the base for
+every activity. It applies the selected language in `attachBaseContext` and
+recreates the activity in `onResume` if the language changed while it was in
+the back stack. `LocaleHelper` stores the choice in `SharedPreferences` and
+maps codes to `values-<code>` resources. See [`LANGUAGES.md`](LANGUAGES.md).
+
 ---
 
 ## Conventions
@@ -257,6 +277,10 @@ and margin 2. Returns `null` on failure; callers must null-check.
 - **Live updates.** The only periodic UI update is the expiry countdown in
   `MainActivity` (a `Handler` posting every 1 s). Start/stop it with
   `onResume`/`onPause`; never leave timers running in the background.
+- **Localization.** Extend `BaseActivity` and use `getString(R.string…)` for
+  every user-facing string — never hard-code UI text. Resources live in
+  `app/res/values/` (English) and `app/res/values-pl/` (Polish); see
+  [`LANGUAGES.md`](LANGUAGES.md).
 - **Defensive parsing.** Views are built from JSON that may be missing fields;
   use `optString`/`optJSONObject`/`optBoolean` and null-check before use.
 
@@ -265,7 +289,7 @@ and margin 2. Returns `null` on failure; callers must null-check.
 ## Adding a new view
 
 1. Create `app/src/com/openpostmobajl/XxxActivity.java` extending
-   `android.app.Activity`.
+   `BaseActivity` (so it is translated and reacts to language changes).
 2. Build the UI in `onCreate` (root `LinearLayout`, optional `ScrollView`,
    `setContentView`). Add a private `dp()` helper and follow the top-bar
    pattern above.

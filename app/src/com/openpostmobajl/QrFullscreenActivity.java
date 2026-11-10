@@ -17,7 +17,7 @@ import android.widget.TextView;
  * Fullscreen QR code with maximum screen brightness and the system bars hidden.
  * Tap anywhere to close.
  */
-public class QrFullscreenActivity extends Activity {
+public class QrFullscreenActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +66,7 @@ public class QrFullscreenActivity extends Activity {
         }
 
         TextView hint = new TextView(this);
-        hint.setText("Tap anywhere to close");
+        hint.setText(R.string.common_tap_to_close);
         hint.setTextColor(Color.rgb(0x55, 0x55, 0x55));
         hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
         hint.setGravity(Gravity.CENTER);

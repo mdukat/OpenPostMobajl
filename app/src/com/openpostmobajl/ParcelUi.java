@@ -1,5 +1,7 @@
 package com.openpostmobajl;
 
+import android.content.Context;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -100,12 +102,12 @@ final class ParcelUi {
      * example {@code "Expires 2026-12-24 08:37 · in 3d 4h"} or
      * {@code "Expires 2026-12-24 08:37 · expired"}.
      */
-    static String expiryText(long expiryMillis) {
+    static String expiryText(Context ctx, long expiryMillis) {
         String when = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
                 .format(new Date(expiryMillis));
         long remaining = expiryMillis - System.currentTimeMillis();
         if (remaining <= 0) {
-            return "Expires " + when + " \u00b7 expired";
+            return ctx.getString(R.string.expires_past, when);
         }
         long totalSec = remaining / 1000;
         long days = totalSec / 86400;
@@ -122,7 +124,7 @@ final class ParcelUi {
         } else {
             left = seconds + "s";
         }
-        return "Expires " + when + " \u00b7 in " + left;
+        return ctx.getString(R.string.expires_in, when, left);
     }
 
     /**
@@ -143,15 +145,17 @@ final class ParcelUi {
     }
 
     /** Human name for a multi-compartment group: {@code MULTISKRYTKA <uuid-section>}. */
-    static String multiCompartmentName(String uuid) {
+    static String multiCompartmentName(Context ctx, String uuid) {
         int dash = uuid.indexOf('-');
         String section = dash > 0 ? uuid.substring(0, dash) : uuid;
-        return "MULTISKRYTKA " + section;
+        return ctx.getString(R.string.multi_name, section);
     }
 
-    static String multiCompartmentRowText(ParcelEntry e) {
-        return multiCompartmentName(e.multiUuid)
-                + "  \u00b7  " + e.parcels.size() + " parcels"
+    static String multiCompartmentRowText(Context ctx, ParcelEntry e) {
+        String count = ctx.getResources().getQuantityString(
+                R.plurals.multi_parcels, e.parcels.size(), e.parcels.size());
+        return multiCompartmentName(ctx, e.multiUuid)
+                + "  \u00b7  " + count
                 + "  \u00b7  " + pointName(e.first)
                 + "  \u00b7  " + senderName(e.first)
                 + "  \u203a";

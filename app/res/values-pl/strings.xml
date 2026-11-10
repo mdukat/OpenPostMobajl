@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Polskie tłumaczenie. Plik jest w UTF-8, więc znaki takie jak ą, ł, ó, ń, ś
+  można wpisywać bezpośrednio. Klucze (name=...) muszą być identyczne jak w
+  app/res/values/strings.xml. Zobacz docs/LANGUAGES.md.
+-->
+<resources>
+    <string name="app_name">OpenPostMobajl</string>
+
+    <!-- Wspólne etykiety -->
+    <string name="common_back">← Wstecz</string>
+    <string name="common_settings">Ustawienia</string>
+    <string name="common_menu">Menu</string>
+    <string name="common_refresh">Odśwież</string>
+    <string name="common_delivered_parcels">Odebrane paczki</string>
+    <string name="common_licenses">Licencje</string>
+    <string name="common_sign_out">Wyloguj się</string>
+    <string name="common_backend">Backend: %1$s</string>
+    <string name="common_qr_code">Kod QR</string>
+    <string name="common_tap_to_close">Dotknij gdziekolwiek, aby zamknąć</string>
+    <string name="common_error">Błąd: %1$s</string>
+
+    <!-- Ekran główny -->
+    <string name="main_status_ready">Gotowe.</string>
+    <string name="main_status_updating">Aktualizowanie…</string>
+    <string name="main_status_loading">Wczytywanie paczek…</string>
+    <string name="main_status_cached">Pamięć podręczna %1$s | paczki: %2$d — aktualizowanie…</string>
+    <string name="main_status_backend">Backend: %1$s (pref %2$s) | paczki: %3$d</string>
+    <string name="main_no_parcels">Nie znaleziono paczek.</string>
+    <string name="main_login_prompt">Zaloguj się numerem telefonu i kodem SMS. Aplikacja przejdzie dalej automatycznie po przekierowaniu.</string>
+    <string name="main_exchanging_code">Wymienianie kodu autoryzacyjnego…</string>
+
+    <!-- Szczegóły paczki -->
+    <string name="detail_title">Paczka %1$s</string>
+    <string name="detail_shipment">Przesyłka: %1$s</string>
+    <string name="detail_status">Status: %1$s (%2$s)</string>
+    <string name="detail_pickup_point">Punkt odbioru: %1$s</string>
+    <string name="detail_sender">Nadawca: %1$s</string>
+    <string name="detail_error">Nie udało się odczytać danych paczki.</string>
+
+    <!-- Grupa wielu skrytek -->
+    <string name="multi_name">MULTISKRYTKA %1$s</string>
+    <plurals name="multi_parcels">
+        <item quantity="one">%d paczka</item>
+        <item quantity="few">%d paczki</item>
+        <item quantity="many">%d paczek</item>
+        <item quantity="other">%d paczki</item>
+    </plurals>
+
+    <!-- Licznik ważności -->
+    <string name="expires_in">Wygasa %1$s · za %2$s</string>
+    <string name="expires_past">Wygasa %1$s · po terminie</string>
+
+    <!-- Odebrane paczki -->
+    <string name="delivered_title">Odebrane paczki</string>
+    <string name="delivered_count">Odebrane paczki: %1$d</string>
+    <string name="delivered_empty">Brak odebranych paczek.</string>
+
+    <!-- Licencje -->
+    <string name="licenses_project">LICENCJA PROJEKTU (MIT)</string>
+    <string name="licenses_third_party">LICENCJE STRON TRZECICH</string>
+    <string name="licenses_load_error">Nie udało się wczytać %1$s: %2$s</string>
+
+    <!-- Ustawienia -->
+    <string name="settings_language">Język</string>
+    <string name="settings_language_description">Wybierz język aplikacji. Zmiana jest stosowana natychmiast.</string>
+</resources>

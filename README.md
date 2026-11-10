@@ -191,6 +191,7 @@ build-release.sh                      signed release APK
 build.sh                              debug wrapper
 docs/APP.md                           app details and usage
 docs/VIEWS.md                         screen/view reference for contributors
+docs/LANGUAGES.md                     translations and adding languages
 docs/PARCEL-SCHEMA.md                 parcel response schema
 docs/FLOW.md                          auth + parcel protocol reference
 ```
@@ -204,6 +205,8 @@ Generated and ignored: `out/`, `libs/`, `tools/root/`, `tools/android-sdk/`,
   troubleshooting.
 - [`docs/VIEWS.md`](docs/VIEWS.md) — every screen, what it shows, where it
   lives in code, navigation, and how to add a new view.
+- [`docs/LANGUAGES.md`](docs/LANGUAGES.md) — how to edit translations and how
+  to add a new language.
 - [`docs/PARCEL-SCHEMA.md`](docs/PARCEL-SCHEMA.md) — the v4 parcel response
   schema and status groups.
 - [`docs/FLOW.md`](docs/FLOW.md) — the language-agnostic OAuth + parcel flow

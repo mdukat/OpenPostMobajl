@@ -46,7 +46,7 @@ import java.util.UUID;
  * parcel list is shown. On later launches the saved token is used (and refreshed
  * if needed) without showing the login page.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends BaseActivity {
 
     private FrameLayout root;
     private LinearLayout panel;
@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
         status = new TextView(this);
         status.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         status.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
-        status.setText("Ready.");
+        status.setText(R.string.main_status_ready);
         panel.addView(status, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -192,7 +192,7 @@ public class MainActivity extends Activity {
         sideHeader.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView menuTitle = new TextView(this);
-        menuTitle.setText("Menu");
+        menuTitle.setText(R.string.common_menu);
         menuTitle.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         menuTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
         sideHeader.addView(menuTitle, new LinearLayout.LayoutParams(
@@ -214,7 +214,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         Button refresh = new Button(this);
-        refresh.setText("Refresh");
+        refresh.setText(R.string.common_refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -226,7 +226,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         Button delivered = new Button(this);
-        delivered.setText("Delivered parcels");
+        delivered.setText(R.string.common_delivered_parcels);
         delivered.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -249,8 +249,20 @@ public class MainActivity extends Activity {
         sidebar.addView(backendBtn, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        Button settings = new Button(this);
+        settings.setText(R.string.common_settings);
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeSidebar();
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            }
+        });
+        sidebar.addView(settings, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
         Button licenses = new Button(this);
-        licenses.setText("Licenses");
+        licenses.setText(R.string.common_licenses);
         licenses.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -262,7 +274,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         Button signOut = new Button(this);
-        signOut.setText("Sign out");
+        signOut.setText(R.string.common_sign_out);
         signOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -322,8 +334,7 @@ public class MainActivity extends Activity {
             String url = Pkce.buildAuthorizeUrl(oauthState, nonce, verifier, ApiClient.languageTag());
             state.authorizeUrl = url;
 
-            status.setText("Log in with your phone number and SMS code. "
-                    + "The app continues automatically after the redirect.");
+            status.setText(R.string.main_login_prompt);
             showWebView(url);
         } catch (Exception e) {
             showError(e);
@@ -392,7 +403,7 @@ public class MainActivity extends Activity {
             }
             if (code != null && code.length() > 0) {
                 codeHandled = true;
-                status.setText("Exchanging authorization code...");
+                status.setText(R.string.main_exchanging_code);
                 if (webView != null) {
                     webView.stopLoading();
                     root.removeView(webView);
@@ -432,7 +443,9 @@ public class MainActivity extends Activity {
     }
 
     private void loadParcels() {
-        status.setText(list.getChildCount() > 0 ? "Updating..." : "Loading parcels...");
+        status.setText(list.getChildCount() > 0
+                ? getString(R.string.main_status_updating)
+                : getString(R.string.main_status_loading));
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -471,15 +484,15 @@ public class MainActivity extends Activity {
 
         int n = sorted.size();
         if (cached) {
-            status.setText("Cached " + res.backend + " | parcels: " + n + " — updating...");
+            status.setText(getString(R.string.main_status_cached, res.backend, n));
         } else {
-            status.setText("Backend: " + res.backend + " (pref " + state.backendPreference
-                    + ") | parcels: " + n);
+            status.setText(getString(R.string.main_status_backend, res.backend,
+                    state.backendPreference, n));
         }
 
         if (items.isEmpty()) {
             TextView tv = new TextView(this);
-            tv.setText("No parcels found.");
+            tv.setText(R.string.main_no_parcels);
             tv.setPadding(0, dp(8), 0, dp(8));
             list.addView(tv);
             syncCountdownTimer();
@@ -489,11 +502,11 @@ public class MainActivity extends Activity {
         for (int i = 0; i < items.size(); i++) {
             final ParcelEntry entry = items.get(i);
             String base = entry.isMulti()
-                    ? ParcelUi.multiCompartmentRowText(entry)
+                    ? ParcelUi.multiCompartmentRowText(this, entry)
                     : ParcelUi.rowText(entry.first);
             final long expiry = entry.expiryMillis();
             TextView tv = new TextView(this);
-            tv.setText(expiry > 0 ? base + "\n" + ParcelUi.expiryText(expiry) : base);
+            tv.setText(expiry > 0 ? base + "\n" + ParcelUi.expiryText(this, expiry) : base);
             tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             tv.setPadding(0, dp(12), 0, dp(12));
@@ -543,7 +556,7 @@ public class MainActivity extends Activity {
             long expiry = rowExpiry.get(i).longValue();
             if (expiry > 0) {
                 rowViews.get(i).setText(
-                        rowBase.get(i) + "\n" + ParcelUi.expiryText(expiry));
+                        rowBase.get(i) + "\n" + ParcelUi.expiryText(this, expiry));
             }
         }
     }
@@ -557,7 +570,7 @@ public class MainActivity extends Activity {
 
     private String backendLabel() {
         String p = state.backendPreference == null ? "auto" : state.backendPreference;
-        return "Backend: " + p;
+        return getString(R.string.common_backend, p);
     }
 
     private void cycleBackend() {
@@ -611,7 +624,7 @@ public class MainActivity extends Activity {
     }
 
     private void showError(Exception e) {
-        status.setText("Error: " + e.getMessage());
+        status.setText(getString(R.string.common_error, e.getMessage()));
     }
 
     @Override

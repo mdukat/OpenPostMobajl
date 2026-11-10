@@ -22,7 +22,7 @@ import org.json.JSONObject;
  * Full parcel view. Shows a locally generated QR code at the top for delivered
  * and ready-to-pickup parcels, a short summary, and the complete backend JSON.
  */
-public class ParcelDetailActivity extends Activity {
+public class ParcelDetailActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +46,7 @@ public class ParcelDetailActivity extends Activity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button back = new Button(this);
-        back.setText("\u2190 Back");
+        back.setText(R.string.common_back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,7 +60,7 @@ public class ParcelDetailActivity extends Activity {
         title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
         title.setPadding(dp(8), 0, 0, 0);
-        title.setText("Parcel " + ParcelUi.last6(parcel));
+        title.setText(getString(R.string.detail_title, ParcelUi.last6(parcel)));
         topBar.addView(title, new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
@@ -84,7 +84,7 @@ public class ParcelDetailActivity extends Activity {
                 Bitmap bmp = QrCode.generate(qr, 600);
                 if (bmp != null) {
                     TextView qrLabel = new TextView(this);
-                    qrLabel.setText("QR code");
+                    qrLabel.setText(R.string.common_qr_code);
                     qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
                     qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
                     content.addView(qrLabel, new LinearLayout.LayoutParams(
@@ -126,12 +126,12 @@ public class ParcelDetailActivity extends Activity {
             summary.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             summary.setText(
-                    "Shipment: " + parcel.optString("shipmentNumber",
-                            parcel.optString("primaryParcelNumber", "")) + "\n"
-                    + "Status: " + parcel.optString("status", "")
-                    + " (" + parcel.optString("statusGroup", "") + ")\n"
-                    + "Pickup point: " + ParcelUi.pointName(parcel) + "\n"
-                    + "Sender: " + ParcelUi.senderName(parcel));
+                    getString(R.string.detail_shipment, parcel.optString("shipmentNumber",
+                            parcel.optString("primaryParcelNumber", ""))) + "\n"
+                    + getString(R.string.detail_status, parcel.optString("status", ""),
+                            parcel.optString("statusGroup", "")) + "\n"
+                    + getString(R.string.detail_pickup_point, ParcelUi.pointName(parcel)) + "\n"
+                    + getString(R.string.detail_sender, ParcelUi.senderName(parcel)));
             summary.setPadding(0, dp(8), 0, dp(8));
             content.addView(summary, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -157,7 +157,7 @@ public class ParcelDetailActivity extends Activity {
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         } else {
             TextView error = new TextView(this);
-            error.setText("Could not read parcel data.");
+            error.setText(R.string.detail_error);
             error.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             content.addView(error);
         }

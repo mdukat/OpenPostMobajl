@@ -20,7 +20,7 @@ import java.io.InputStream;
  * Shows the project MIT license and the third-party license notices.
  * Both files are bundled in the APK as assets by the build scripts.
  */
-public class LicensesActivity extends Activity {
+public class LicensesActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +36,7 @@ public class LicensesActivity extends Activity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button back = new Button(this);
-        back.setText("\u2190 Back");
+        back.setText(R.string.common_back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,7 +47,7 @@ public class LicensesActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView title = new TextView(this);
-        title.setText("Licenses");
+        title.setText(R.string.common_licenses);
         title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
         title.setPadding(dp(8), 0, 0, 0);
@@ -65,9 +65,9 @@ public class LicensesActivity extends Activity {
         text.setTextIsSelectable(true);
         text.setPadding(0, dp(8), 0, dp(8));
         text.setText(
-                "PROJECT LICENSE (MIT)\n\n"
+                getString(R.string.licenses_project) + "\n\n"
                 + readAsset("LICENSE.md")
-                + "\n\n\nTHIRD-PARTY LICENSES\n\n"
+                + "\n\n\n" + getString(R.string.licenses_third_party) + "\n\n"
                 + readAsset("THIRD-PARTY-LICENSES.md"));
         scroll.addView(text, new ScrollView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -89,7 +89,7 @@ public class LicensesActivity extends Activity {
             in.close();
             return new String(out.toByteArray(), "UTF-8");
         } catch (Exception e) {
-            return "Could not load " + name + ": " + e.getMessage();
+            return getString(R.string.licenses_load_error, name, e.getMessage());
         }
     }
 
