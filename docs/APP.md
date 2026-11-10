@@ -131,13 +131,43 @@ QR generation uses the ZXing core jar installed by `bootstrap.sh` into
 - **Main view:** a top bar with a burger button (`≡`) on the left and the
   `OpenPostMobajl` title, then the status line and the parcel list.
 - **Sidebar:** tap the burger to slide in a panel with **Refresh**,
-  **Delivered parcels**, **Backend: auto/v4/global**, **Licenses**, and
-  **Sign out**. Close it with the `×` button, by tapping the dimmed scrim, or
-  with the system Back button.
+  **Delivered parcels**, **Backend: auto/v4/global**, **Settings**,
+  **Licenses**, and **Sign out**. Close it with the `×` button, by tapping the
+  dimmed scrim, or with the system Back button.
 - The status line and parcel list always stay in the main view.
 
 See [`VIEWS.md`](VIEWS.md) for a per-screen code reference, the navigation
 map, and instructions for adding a new view.
+
+## Settings and background monitoring
+
+The sidebar **Settings** screen currently has one option: **Background parcel
+monitoring**, which is **off by default**. The value is stored in
+`SharedPreferences` (`openpostmobajl_settings`), so it survives sign-out.
+
+When enabled, the app runs `ParcelMonitorService`, a `dataSync` **foreground
+service** that:
+
+- polls the parcel list every 5 minutes on a background thread,
+- compares each parcel's `status` against the last seen value (seeded from the
+  encrypted `parcels.json` cache, so no alerts fire on startup),
+- posts one notification per change: `Parcel <last6> status changed` with the
+  old and new status,
+- shows a permanent low-importance **"Monitoring parcels"** notification while
+  it runs, and
+- refreshes `parcels.json` with each poll.
+
+`MainActivity` reconciles the service with the setting in `onResume` and
+`loadParcels`, and stops it on sign-out. The service and the UI share
+`ParcelMonitorService.AUTH_LOCK` so two token refreshes never race.
+
+Caveats: a foreground service keeps the process alive, but Doze or memory
+pressure can still delay network access, so the 5-minute cadence is best
+effort. On Android 13+ the status-change notifications require
+`POST_NOTIFICATIONS`. The service type is `dataSync`; because the app targets
+API 34, the Android 15 six-hour `dataSync` timeout (which applies to apps
+targeting API 35+) does not apply. Enabling it always shows the persistent
+monitoring notification.
 
 ## Cache
 
@@ -226,6 +256,9 @@ app/res/values/strings.xml                  app name
 app/src/com/openpostmobajl/MainActivity.java              UI, WebView, orchestration
 app/src/com/openpostmobajl/ParcelDetailActivity.java      full parcel view + QR code
 app/src/com/openpostmobajl/MultiCompartmentActivity.java  multicompartment group + QR code
+app/src/com/openpostmobajl/SettingsActivity.java          settings screen
+app/src/com/openpostmobajl/AppSettings.java               SharedPreferences (settings)
+app/src/com/openpostmobajl/ParcelMonitorService.java      foreground status monitor
 app/src/com/openpostmobajl/ParcelUi.java                  list helpers + grouping
 app/src/com/openpostmobajl/ParcelEntry.java               list row (single or group)
 app/src/com/openpostmobajl/ParcelCache.java               parcels.json cache

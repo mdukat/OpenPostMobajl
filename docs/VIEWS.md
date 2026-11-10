@@ -25,6 +25,7 @@ MainActivity
    │                              ├─ QR tap        ──► QrFullscreenActivity
    │                              └─ contained row ──► ParcelDetailActivity
    ├─ sidebar: Delivered parcels ──► DeliveredParcelsActivity ──► ParcelDetailActivity
+   ├─ sidebar: Settings          ──► SettingsActivity
    ├─ sidebar: Licenses          ──► LicensesActivity
    └─ sidebar: Refresh / Backend / Sign out (stay in MainActivity)
 ```
@@ -41,6 +42,7 @@ as an overlay on top of the list.
 | `MainActivity` | `MainActivity.java` | Launcher. Login WebView + parcel list + sidebar. | — |
 | `ParcelDetailActivity` | `ParcelDetailActivity.java` | One parcel: QR, summary, full JSON. | `parcel` = single JSON object string |
 | `MultiCompartmentActivity` | `MultiCompartmentActivity.java` | A "MULTISKRYTKA" group: one QR + member list. | `parcels` = JSON array string, `uuid` = group uuid |
+| `SettingsActivity` | `SettingsActivity.java` | Enable/disable background parcel monitoring, with caveats. | — |
 | `DeliveredParcelsActivity` | `DeliveredParcelsActivity.java` | Delivered parcels from the cache only (no network). | — |
 | `QrFullscreenActivity` | `QrFullscreenActivity.java` | Fullscreen QR at max brightness; tap to close. | `qr` = payload string |
 | `LicensesActivity` | `LicensesActivity.java` | Bundled `LICENSE.md` + `THIRD-PARTY-LICENSES.md`. | — |
@@ -100,6 +102,7 @@ Key methods:
 | `loadParcels` | background fetch + refresh, posts to `render`, saves cache |
 | `render` | **the list renderer** (see below) |
 | `updateCountdowns` / `syncCountdownTimer` / `onResume` / `onPause` | live expiry countdown: a 1 s `Handler` tick while the main view is resumed |
+| `syncParcelMonitor` | starts/stops `ParcelMonitorService` to match the Settings toggle (called from `onResume` and `loadParcels`) |
 | `cycleBackend` | cycles `auto → v4 → global`, saves, reloads |
 | `signOut` | deletes auth + cache, clears cookies, restarts login |
 | `showError` | writes `Error: …` into the status line |
@@ -108,7 +111,7 @@ Key methods:
 
 Main panel layout (top to bottom): burger button, `status` `TextView`, a
 `ScrollView` containing the `list` `LinearLayout`. Sidebar buttons: **Refresh**,
-**Delivered parcels**, **Backend: …**, **Licenses**, **Sign out**.
+**Delivered parcels**, **Backend: …**, **Settings**, **Licenses**, **Sign out**.
 
 `render(res, cached)` is the single place that turns data into rows:
 
@@ -162,6 +165,17 @@ in scan order) and `uuid`. In `onCreate`:
 Grouping rules live in `ParcelUi` (see below), not here. This activity only
 renders whatever group it is given.
 
+### `SettingsActivity`
+
+File: `app/src/com/openpostmobajl/SettingsActivity.java`
+
+Top bar (`← Back` + title) and a single `Switch`, **Background parcel
+monitoring**, followed by a caveats paragraph. The switch is initialised from
+`AppSettings.isMonitorEnabled` (default `false`) and `onMonitorToggled`
+persists the new value, requests `POST_NOTIFICATIONS` when enabling on API 33+,
+and calls `ParcelMonitorService.start`/`stop`. The screen is reached from the
+sidebar **Settings** button.
+
 ### `DeliveredParcelsActivity`
 
 File: `app/src/com/openpostmobajl/DeliveredParcelsActivity.java`
@@ -188,6 +202,30 @@ File: `app/src/com/openpostmobajl/LicensesActivity.java`
 Reads the `LICENSE.md` and `THIRD-PARTY-LICENSES.md` assets (copied into the APK
 by the build scripts) with `readAsset` and shows them in one monospace,
 selectable `TextView`.
+
+---
+
+## Background work
+
+### `ParcelMonitorService` — `app/src/com/openpostmobajl/ParcelMonitorService.java`
+
+A `dataSync` **foreground service** (not a view) that polls the parcel list
+every 5 minutes and posts status-change notifications. Started/stopped through
+its static `start(Context)` / `stop(Context)` helpers; only runs when the
+Settings toggle is on. Key parts:
+
+- `onCreate` builds the ongoing notification and calls `startForeground(...)`,
+  then schedules `poll()` every 5 minutes on a daemon thread.
+- `poll()` loads `AuthState`, fetches via `ApiClient.ensureAuth` under the
+  shared `AUTH_LOCK`, diffs `status` against the last-seen map (seeded from
+  `ParcelCache`), posts a notification per change, and refreshes the cache.
+- `onStartCommand` returns `START_STICKY`; `onDestroy` shuts the executor down.
+- Two notification channels: `parcel_monitor` (low importance, ongoing) and
+  `parcel_status` (default importance, changes).
+
+`AppSettings` (`app/src/com/openpostmobajl/AppSettings.java`) stores the toggle
+in `SharedPreferences` (`openpostmobajl_settings`). See [`APP.md`](APP.md) for
+the caveats and the manifest permissions/`foregroundServiceType`.
 
 ---
 
@@ -301,6 +339,8 @@ and margin 2. Returns `null` on failure; callers must null-check.
 | multi-compartment grouping or name | `ParcelUi.grouped` / `multiCompartmentUuid` / `multiCompartmentName` / `multiCompartmentRowText` |
 | expiry countdown format or parsing | `ParcelUi.expiryMillis` / `parseIsoMillis` / `expiryText` |
 | countdown refresh / lifecycle | `MainActivity` `countdownTick` / `updateCountdowns` / `onResume` / `onPause` |
+| background monitoring on/off | `AppSettings.isMonitorEnabled` / `setMonitorEnabled`, `SettingsActivity.onMonitorToggled` |
+| status-check interval or notification content | `ParcelMonitorService` (`INTERVAL_MINUTES`, `postChangeNotification`) |
 | what a detail screen shows | `ParcelDetailActivity.onCreate` |
 | what a group screen shows | `MultiCompartmentActivity.onCreate` |
 | when a QR is shown | `ParcelDetailActivity` / `MultiCompartmentActivity` QR blocks |

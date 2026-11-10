@@ -1,9 +1,12 @@
 package com.openpostmobajl;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -73,6 +76,7 @@ public class MainActivity extends Activity {
     };
 
     private static final int SIDEBAR_WIDTH_DP = 280;
+    private static final int REQ_POST_NOTIFICATIONS = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +95,7 @@ public class MainActivity extends Activity {
         }
 
         setContentView(buildPanel());
+        ensureNotificationPermission();
 
         boolean haveCredentials = (state.authToken != null && state.authToken.length() > 0)
                 || (state.refreshToken != null && state.refreshToken.length() > 0);
@@ -236,6 +241,18 @@ public class MainActivity extends Activity {
             }
         });
         sidebar.addView(backendBtn, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        Button settings = new Button(this);
+        settings.setText("Settings");
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeSidebar();
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            }
+        });
+        sidebar.addView(settings, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         Button licenses = new Button(this);
@@ -426,13 +443,19 @@ public class MainActivity extends Activity {
     }
 
     private void loadParcels() {
+        syncParcelMonitor();
         status.setText(list.getChildCount() > 0 ? "Updating..." : "Loading parcels...");
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    final ApiClient.ParcelResult res = ApiClient.ensureAuth(state);
-                    AuthStore.save(MainActivity.this, state);
+                    final ApiClient.ParcelResult res;
+                    // Share the token lock with ParcelMonitorService so two
+                    // refreshes never race (a refresh may rotate the token).
+                    synchronized (ParcelMonitorService.AUTH_LOCK) {
+                        res = ApiClient.ensureAuth(state);
+                        AuthStore.save(MainActivity.this, state);
+                    }
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -575,8 +598,17 @@ public class MainActivity extends Activity {
         loadParcels();
     }
 
+    private void syncParcelMonitor() {
+        if (AppSettings.isMonitorEnabled(this)) {
+            ParcelMonitorService.start(this);
+        } else {
+            ParcelMonitorService.stop(this);
+        }
+    }
+
     private void signOut() {
         closeSidebar();
+        ParcelMonitorService.stop(this);
         AuthStore.delete(this);
         ParcelCache.delete(this);
         if (webView != null) {
@@ -608,11 +640,22 @@ public class MainActivity extends Activity {
         status.setText("Error: " + e.getMessage());
     }
 
+    private void ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    REQ_POST_NOTIFICATIONS);
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         resumed = true;
         syncCountdownTimer();
+        syncParcelMonitor();
     }
 
     @Override
