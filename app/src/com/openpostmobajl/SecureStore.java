@@ -1,6 +1,7 @@
 package com.openpostmobajl;
 
 import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
 
@@ -43,8 +44,14 @@ final class SecureStore {
     static byte[] encrypt(byte[] plaintext) throws Exception {
         try {
             return encryptWithKey(plaintext);
-        } catch (Exception e) {
-            // A key can be invalidated by lock-screen changes. Recreate it once.
+        } catch (KeyPermanentlyInvalidatedException e) {
+            // The key was invalidated (for example by a lock-screen change).
+            // Recreate it once and retry; do not delete key material for any
+            // other error, otherwise a transient failure would wipe the data.
+            deleteKey();
+            return encryptWithKey(plaintext);
+        } catch (UnrecoverableKeyException e) {
+            // The key exists but its material cannot be read. Recreate once.
             deleteKey();
             return encryptWithKey(plaintext);
         }
