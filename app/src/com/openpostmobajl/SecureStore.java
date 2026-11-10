@@ -41,6 +41,7 @@ final class SecureStore {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int GCM_TAG_BITS = 128;
     private static final int VERSION = 2;
+    private static final int MAX_FILE_BYTES = 16 * 1024 * 1024;
 
     private SecureStore() {
     }
@@ -156,8 +157,14 @@ final class SecureStore {
     private static byte[] readAll(InputStream in) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[8192];
+        int total = 0;
         int n;
         while ((n = in.read(buf)) > 0) {
+            total += n;
+            if (total > MAX_FILE_BYTES) {
+                in.close();
+                throw new Exception("input exceeds " + MAX_FILE_BYTES + " bytes");
+            }
             out.write(buf, 0, n);
         }
         in.close();

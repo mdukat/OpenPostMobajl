@@ -23,6 +23,7 @@ final class ApiClient {
 
     static final String API_BASE = "https://api-inmobile-pl.easypack24.net";
     static final String GLOBAL_BASE = API_BASE + "/global";
+    private static final int MAX_RESPONSE_BYTES = 16 * 1024 * 1024;
 
     static final class ApiException extends Exception {
         final int status;
@@ -79,8 +80,14 @@ final class ApiClient {
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[8192];
+        int total = 0;
         int n;
         while ((n = in.read(buf)) > 0) {
+            total += n;
+            if (total > MAX_RESPONSE_BYTES) {
+                in.close();
+                throw new Exception("response exceeds " + MAX_RESPONSE_BYTES + " bytes");
+            }
             out.write(buf, 0, n);
         }
         in.close();
