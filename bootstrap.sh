@@ -124,10 +124,10 @@ file_sha256() {
     fi
 }
 
-# manifest_add <type> <name> <filename> [sha1]
+# manifest_add <type> <name> <filename> [sha256]
 manifest_add() {
     if [ "${4:-}" = "" ]; then
-        _sha="$(file_sha1 "$MIRROR/$3")"
+        _sha="$(file_sha256 "$MIRROR/$3")"
     else
         _sha="$4"
     fi
@@ -311,9 +311,16 @@ AWKEOF
         line="$(awk -v target="$pkg" -f "$TMP/sdkurl.awk" "$TMP/repo.xml")"
         [ -n "$line" ] || die "Android package not found: $pkg"
         url="${line%%|*}"
-        sha="${line#*|}"
+        sha1="${line#*|}"
         download "$ANDROID_REPO/$url" "$url"
-        manifest_add android "$pkg" "$url" "$sha"
+        # Google still publishes SHA-1 only, so verify it at download time and
+        # then record a stronger SHA-256 in the mirror manifest.
+        if [ -n "$sha1" ]; then
+            _got1="$(file_sha1 "$MIRROR/$url")"
+            [ "$_got1" = "$sha1" ] \
+                || die "checksum mismatch (sha1): $url"
+        fi
+        manifest_add android "$pkg" "$url"
     done
 
     # ---- ZXing core (local QR generation) ----
@@ -334,8 +341,8 @@ check_pkgs() {
         _f="$(pkg_file "$_type" "$_pkg")"
         [ -s "$MIRROR/$_f" ] || die "missing file in mirror: $MIRROR/$_f"
         _exp="$(manifest_field "$_type" "$_pkg" 4)"
-        if [ -n "$_exp" ] && command -v sha1sum >/dev/null 2>&1; then
-            _got="$(sha1sum "$MIRROR/$_f" | cut -d' ' -f1)"
+        if [ -n "$_exp" ]; then
+            _got="$(file_sha256 "$MIRROR/$_f")"
             [ "$_got" = "$_exp" ] || die "checksum mismatch: $_f"
         fi
         printf '    ok %s\n' "$_f"
