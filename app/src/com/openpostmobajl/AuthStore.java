@@ -38,7 +38,7 @@ final class AuthStore {
             return st;
         }
 
-        String json = new String(SecureStore.decrypt(raw), "UTF-8");
+        String json = new String(SecureStore.decrypt(raw, FILE), "UTF-8");
         JSONObject o = new JSONObject(json);
         st.authToken = o.optString("authToken", "");
         st.accessToken = o.optString("accessToken", "");
@@ -84,7 +84,7 @@ final class AuthStore {
         o.put("updatedAt", st.updatedAt);
 
         byte[] plain = o.toString(2).getBytes("UTF-8");
-        SecureStore.writeFile(file(ctx), SecureStore.encrypt(plain));
+        SecureStore.writeFile(file(ctx), SecureStore.encrypt(plain, FILE));
     }
 
     static void delete(Context ctx) {

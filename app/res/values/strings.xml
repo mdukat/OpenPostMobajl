@@ -1,4 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default (English) translations. Polish lives in app/res/values-pl/strings.xml.
+  See docs/LANGUAGES.md for how to change these or add a new language.
+-->
 <resources>
     <string name="app_name">OpenPostMobajl</string>
+
+    <!-- Shared labels -->
+    <string name="common_back">← Back</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_menu">Menu</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_delivered_parcels">Delivered parcels</string>
+    <string name="common_licenses">Licenses</string>
+    <string name="common_sign_out">Sign out</string>
+    <string name="common_qr_code">QR code</string>
+    <string name="common_tap_to_close">Tap anywhere to close</string>
+    <string name="common_error">Error: %1$s</string>
+
+    <!-- Main screen -->
+    <string name="main_status_ready">Ready.</string>
+    <string name="main_status_updating">Updating…</string>
+    <string name="main_status_loading">Loading parcels…</string>
+    <string name="main_status_cached">Cached %1$s | parcels: %2$d — updating…</string>
+    <string name="main_status_backend">Backend: %1$s (pref %2$s) | parcels: %3$d</string>
+    <string name="main_no_parcels">No parcels found.</string>
+    <string name="main_parcel_simplified">Parcel: %1$s</string>
+    <string name="main_login_prompt">Log in with your phone number and SMS code. The app continues automatically after the redirect.</string>
+    <string name="main_exchanging_code">Exchanging authorization code…</string>
+
+    <!-- Parcel detail -->
+    <string name="detail_title">Parcel %1$s</string>
+    <string name="detail_shipment">Shipment: %1$s</string>
+    <string name="detail_status">Status: %1$s (%2$s)</string>
+    <string name="detail_pickup_point">Pickup point: %1$s</string>
+    <string name="detail_sender">Sender: %1$s</string>
+    <string name="detail_error">Could not read parcel data.</string>
+    <string name="detail_label_pickup_code">Pickup code</string>
+    <string name="detail_label_number">Parcel number</string>
+    <string name="detail_label_status">Status</string>
+    <string name="detail_label_pickup_point">Pickup point</string>
+    <string name="detail_label_sender">Sender</string>
+    <string name="detail_qr_hint">Tap the QR code to open it full screen</string>
+
+    <!-- Multi-compartment group -->
+    <string name="multi_name">MULTISKRYTKA %1$s</string>
+    <plurals name="multi_parcels">
+        <item quantity="one">%d parcel</item>
+        <item quantity="other">%d parcels</item>
+    </plurals>
+
+    <!-- Expiry countdown -->
+    <string name="expires_in">Expires %1$s · in %2$s</string>
+    <string name="expires_past">Expires %1$s · expired</string>
+
+    <!-- Delivered parcels -->
+    <string name="delivered_title">Delivered parcels</string>
+    <string name="delivered_count">Delivered parcels: %1$d</string>
+    <string name="delivered_empty">No delivered parcels.</string>
+
+    <!-- Licenses -->
+    <string name="licenses_project">PROJECT LICENSE (MIT)</string>
+    <string name="licenses_third_party">THIRD-PARTY LICENSES</string>
+    <string name="licenses_load_error">Could not load %1$s: %2$s</string>
+
+    <!-- Status labels (simplified mode) -->
+    <string name="status_confirmed">Confirmed</string>
+    <string name="status_dispatched_by_sender">Dispatched by sender</string>
+    <string name="status_taken_by_courier">Taken by courier</string>
+    <string name="status_ready_to_pickup">Ready for pickup</string>
+    <string name="status_awaiting_collection">Waiting for collection</string>
+    <string name="status_ready_to_collect">Ready to collect</string>
+    <string name="status_out_for_delivery">Out for delivery</string>
+    <string name="status_delivered">Delivered</string>
+    <string name="status_undelivered">Not delivered</string>
+    <string name="status_claimed">Claimed</string>
+    <string name="status_adopted_at_sorting_center">Received at Sort Centre</string>
+    <string name="status_adopted_at_source_branch">Received at Collection Depot</string>
+    <string name="status_adopted_at_target_branch">Received at Delivery Depot</string>
+    <string name="status_avizo">Returned to Branch</string>
+    <string name="status_avizo_completed">Payment for the extension of parcel collection time has been completed</string>
+    <string name="status_avizo_rejected">Payment for the extension of parcel collection time has been rejected</string>
+    <string name="status_c2x_completed">Payment for sending the parcel has been completed</string>
+    <string name="status_c2x_rejected">Payment for sending the parcel has been rejected</string>
+    <string name="status_canceled">Label cancelled</string>
+    <string name="status_canceled_redirect_to_box">Redirection cancelled</string>
+    <string name="status_cod_completed">Payment for the parcel has been completed</string>
+    <string name="status_cod_rejected">Payment for the parcel has been rejected</string>
+    <string name="status_collected_by_customer">It\'s been collected from delivery office</string>
+    <string name="status_collected_from_sender">Collected from sender</string>
+    <string name="status_created">Parcel created</string>
+    <string name="status_delay_in_delivery">Delayed delivery</string>
+    <string name="status_delivery_attempt_failed">We attempted delivery and left a card</string>
+    <string name="status_dispatched_by_sender_to_pok">Sent in ParcelPoint</string>
+    <string name="status_missing">Lost</string>
+    <string name="status_not_collected">It wasn\'t picked up, so it\'s heading back</string>
+    <string name="status_offer_selected">Offer selected</string>
+    <string name="status_offers_prepared">Offer prepared</string>
+    <string name="status_other">Other</string>
+    <string name="status_out_for_delivery_to_address">Ready for delivery</string>
+    <string name="status_oversized">Dimensions exceeded</string>
+    <string name="status_permanently_redirected_to_box_machine">It\'s been redirected to a new InPost Locker</string>
+    <string name="status_permanently_redirected_to_customer_service_point">It\'s been redirected to a new InPost Shop</string>
+    <string name="status_pickup_reminder_sent">Ready to collect</string>
+    <string name="status_pickup_reminder_sent_address">Another delivery attempt</string>
+    <string name="status_pickup_time_expired">Collection time expired</string>
+    <string name="status_readdressed">Redirected to another address</string>
+    <string name="status_ready_for_collection">It\'s waiting at the delivery office</string>
+    <string name="status_ready_to_pickup_from_branch">Ready for collection from Branch</string>
+    <string name="status_ready_to_pickup_from_pok">Ready for collection</string>
+    <string name="status_ready_to_pickup_from_pok_registered">Ready for collection</string>
+    <string name="status_redirect_to_box">Redirected</string>
+    <string name="status_rejected_by_receiver">Refusal of collection</string>
+    <string name="status_return_pickup_confirmation_to_sender">To be returned</string>
+    <string name="status_returned_to_sender">Returned to sender</string>
+    <string name="status_sent_from_sorting_center">Despatched from Sort Centre</string>
+    <string name="status_sent_from_source_branch">Despatched from Depot</string>
+    <string name="status_stack_in_box_machine">Parcel stored in temporary Parcel Locker</string>
+    <string name="status_stack_in_customer_service_point">Parcel stored</string>
+    <string name="status_stack_parcel_in_box_machine_pickup_time_expired">Time limit for the collection of stored parcel exceeded</string>
+    <string name="status_stack_parcel_pickup_time_expired">Time limit for storage exceeded</string>
+    <string name="status_taken_by_courier_from_pok">Picked up from the sender’s ParcelPoint</string>
+    <string name="status_undelivered_cod_cash_receiver">Undelivered</string>
+    <string name="status_undelivered_incomplete_address">Undelivered</string>
+    <string name="status_undelivered_lack_of_access_letterbox">Undelivered</string>
+    <string name="status_undelivered_no_mailbox">Undelivered</string>
+    <string name="status_undelivered_not_live_address">Undelivered</string>
+    <string name="status_undelivered_unknown_receiver">Undelivered</string>
+    <string name="status_undelivered_wrong_address">Undelivered</string>
+    <string name="status_unstack_from_box_machine">Parcel on its way to the originally selected Parcel Locker</string>
+    <string name="status_unstack_from_customer_service_point">Issued for delivery</string>
+    <string name="status_group_other">Other</string>
+    <string name="status_group_to_send">parcel to send</string>
+    <string name="status_group_created">parcel created</string>
+    <string name="status_group_in_transit">parcel in transit</string>
+    <string name="status_group_in_delivery">parcel out for delivery</string>
+    <string name="status_group_to_pickup">parcel ready for pickup</string>
+    <string name="status_group_delivered">parcel delivered</string>
+    <string name="status_group_undelivered">parcel not delivered</string>
+    <string name="status_group_claimed">parcel claimed</string>
+
+    <!-- Settings -->
+    <string name="settings_language">Language</string>
+    <string name="settings_language_description">Choose the app language. The change is applied immediately.</string>
+    <string name="settings_backend">Backend</string>
+    <string name="settings_backend_description">Which parcel API to use. Automatic tries the PL (v4) endpoint first, then the global one.</string>
+    <string name="backend_auto">Automatic</string>
+    <string name="backend_v4">v4 (PL)</string>
+    <string name="backend_global">Global</string>
+    <string name="settings_simplified">Simplified mode</string>
+    <string name="settings_simplified_description">Larger text, clearer buttons and a simple parcel list. Recommended for older users.</string>
+    <string name="settings_pickup_image">Pickup point photo</string>
+    <string name="settings_pickup_image_description">Download and show the pickup point photo. Cached for 24 hours. Off by default.</string>
 </resources>

@@ -101,6 +101,14 @@ into a single logical row named `MULTISKRYTKA <uuid-section>`, where
 shows the number of parcels and the usual pickup point / sender. A
 `multiCompartment` uuid seen on only one parcel is left as a normal row.
 
+Ready-to-pickup rows also show a live countdown to the parcel's `expiryDate`
+as a second line, for example `Expires 2026-12-24 08:37 · in 3d 4h`: the local
+`expiryDate` plus the remaining time (`Xd Yh` → `Xh Ym` → `Xm Ys`), or
+`expired` once it has passed. A `MULTISKRYTKA` group uses the earliest
+`expiryDate` among its parcels. Rows without a valid `expiryDate` show no
+countdown. The countdown refreshes once per second while the main view is in
+the foreground.
+
 Tapping a grouped row opens `MultiCompartmentActivity`, which shows a single QR
 code (taken from the first parcel in scan order) and the list of parcels the
 group contains; each contained parcel can be tapped to open its own
@@ -123,13 +131,51 @@ QR generation uses the ZXing core jar installed by `bootstrap.sh` into
 - **Main view:** a top bar with a burger button (`≡`) on the left and the
   `OpenPostMobajl` title, then the status line and the parcel list.
 - **Sidebar:** tap the burger to slide in a panel with **Refresh**,
-  **Delivered parcels**, **Backend: auto/v4/global**, **Licenses**, and
-  **Sign out**. Close it with the `×` button, by tapping the dimmed scrim, or
-  with the system Back button.
+  **Delivered parcels**, **Settings**, **Licenses**, and **Sign out**. Close it with the `×` button, by tapping the
+  dimmed scrim, or with the system Back button.
 - The status line and parcel list always stay in the main view.
 
 See [`VIEWS.md`](VIEWS.md) for a per-screen code reference, the navigation
 map, and instructions for adding a new view.
+
+## Simplified mode
+
+An accessibility mode for older users, toggled with the **Simplified mode**
+checkbox in **Settings** (on by default). When enabled it:
+
+- hides the status line (errors are still shown) and **Sign out**, and moves
+  **Settings** / **Licenses** to the bottom of the sidebar;
+- turns the burger into a **Menu** button and adds a same-sized **Refresh**
+  button next to it in the top bar (both a little larger, for easier tapping);
+- shows every list row as `Parcel: <sender name>` followed by the translated
+  status, with a visible border instead of the compact
+  `last6 · status · point · sender` line and dividers; MULTISKRYTKA groups add
+  a `MULTISKRYTKA <uuid-section>` header so they are not mistaken for a single
+  parcel;
+- translates the status, e.g. `TAKEN_BY_COURIER (IN_TRANSIT)` →
+  `Taken by courier - parcel in transit` (and the Polish equivalent) via
+  `ParcelUi.statusText`;
+- hides the top **Parcel `<number>`** title (parcel detail) and the **QR code**
+  label and raw QR payload (parcel detail and MULTISKRYTKA group view); keeps
+  the QR image with a "tap to open full screen" hint;
+- splits the detail screen into separate labeled blocks — **Sender** first
+  (right below the QR code), then **Pickup code** (`openCode`, falling back to
+  the last segment of the QR payload), **Parcel number**, translated **Status**
+  and **Pickup point** (with `locationDescription`, `openingHours` and
+  `addressDetails`) — instead of one block;
+- hides the raw JSON block on the parcel detail screen;
+- scales all text up (font scale ×1.3, on top of the system setting).
+
+Separately, **Settings → Pickup point photo** (off by default) makes the parcel
+detail view download `pickUpPoint.imageUrl`, cache it for 24 hours and show it
+under the **Pickup point** block. It is best-effort: a missing URL or a failed
+download shows nothing (no broken image, no error).
+
+The flag is stored in `SharedPreferences` (`openpostmobajl_settings`,
+`simplified_mode`). It is applied together with the language by
+`AppSettings.wrap` in `BaseActivity.attachBaseContext`, so it affects the whole
+app; activities recreate on resume when it changes. The bordered-row style is
+`Ui.applyBorderedRow`.
 
 ## Cache
 
@@ -176,8 +222,9 @@ within each group):
 4. **Other** — `UNDELIVERED`, `CLAIMED`, `OTHER`, anything unknown
 
 Delivered parcels (`DELIVERED`) are excluded from the main list and shown in
-the **Delivered parcels** view. The rank function also recognizes `DELIVERED`
-for that view.
+the **Delivered parcels** view, sorted by `storedDate` **newest first** (parcels
+without a valid `storedDate` are listed last). The rank function also
+recognizes `DELIVERED` for that view.
 
 The rank is computed from `statusGroup` first, then `status` as a fallback.
 This matches the app's own `ShipmentStatusGroup` enum
@@ -186,7 +233,8 @@ This matches the app's own `ShipmentStatusGroup` enum
 
 ## Backends
 
-The app has a **Backend** button that cycles `auto` → `v4` → `global`:
+The backend is chosen in **Settings → Backend** (`Automatic`, `v4 (PL)` or
+`Global`):
 
 | Preference | Request | Notes |
 |---|---|---|

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Polskie tłumaczenie. Plik jest w UTF-8, więc znaki takie jak ą, ł, ó, ń, ś
+  można wpisywać bezpośrednio. Klucze (name=...) muszą być identyczne jak w
+  app/res/values/strings.xml. Zobacz docs/LANGUAGES.md.
+-->
+<resources>
+    <string name="app_name">OpenPostMobajl</string>
+
+    <!-- Wspólne etykiety -->
+    <string name="common_back">← Wstecz</string>
+    <string name="common_settings">Ustawienia</string>
+    <string name="common_menu">Menu</string>
+    <string name="common_refresh">Odśwież</string>
+    <string name="common_delivered_parcels">Odebrane paczki</string>
+    <string name="common_licenses">Licencje</string>
+    <string name="common_sign_out">Wyloguj się</string>
+    <string name="common_qr_code">Kod QR</string>
+    <string name="common_tap_to_close">Dotknij gdziekolwiek, aby zamknąć</string>
+    <string name="common_error">Błąd: %1$s</string>
+
+    <!-- Ekran główny -->
+    <string name="main_status_ready">Gotowe.</string>
+    <string name="main_status_updating">Aktualizowanie…</string>
+    <string name="main_status_loading">Wczytywanie paczek…</string>
+    <string name="main_status_cached">Pamięć podręczna %1$s | paczki: %2$d — aktualizowanie…</string>
+    <string name="main_status_backend">Backend: %1$s (pref %2$s) | paczki: %3$d</string>
+    <string name="main_no_parcels">Nie znaleziono paczek.</string>
+    <string name="main_parcel_simplified">Paczka: %1$s</string>
+    <string name="main_login_prompt">Zaloguj się numerem telefonu i kodem SMS. Aplikacja przejdzie dalej automatycznie po przekierowaniu.</string>
+    <string name="main_exchanging_code">Wymienianie kodu autoryzacyjnego…</string>
+
+    <!-- Szczegóły paczki -->
+    <string name="detail_title">Paczka %1$s</string>
+    <string name="detail_shipment">Przesyłka: %1$s</string>
+    <string name="detail_status">Status: %1$s (%2$s)</string>
+    <string name="detail_pickup_point">Punkt odbioru: %1$s</string>
+    <string name="detail_sender">Nadawca: %1$s</string>
+    <string name="detail_error">Nie udało się odczytać danych paczki.</string>
+    <string name="detail_label_pickup_code">Kod odbioru</string>
+    <string name="detail_label_number">Numer paczki</string>
+    <string name="detail_label_status">Status</string>
+    <string name="detail_label_pickup_point">Punkt odbioru</string>
+    <string name="detail_label_sender">Nadawca</string>
+    <string name="detail_qr_hint">Dotknij kodu QR, aby otworzyć go na pełnym ekranie</string>
+
+    <!-- Grupa wielu skrytek -->
+    <string name="multi_name">MULTISKRYTKA %1$s</string>
+    <plurals name="multi_parcels">
+        <item quantity="one">%d paczka</item>
+        <item quantity="few">%d paczki</item>
+        <item quantity="many">%d paczek</item>
+        <item quantity="other">%d paczki</item>
+    </plurals>
+
+    <!-- Licznik ważności -->
+    <string name="expires_in">Wygasa %1$s · za %2$s</string>
+    <string name="expires_past">Wygasa %1$s · po terminie</string>
+
+    <!-- Odebrane paczki -->
+    <string name="delivered_title">Odebrane paczki</string>
+    <string name="delivered_count">Odebrane paczki: %1$d</string>
+    <string name="delivered_empty">Brak odebranych paczek.</string>
+
+    <!-- Licencje -->
+    <string name="licenses_project">LICENCJA PROJEKTU (MIT)</string>
+    <string name="licenses_third_party">LICENCJE STRON TRZECICH</string>
+    <string name="licenses_load_error">Nie udało się wczytać %1$s: %2$s</string>
+
+    <!-- Etykiety statusów (tryb uproszczony) -->
+    <string name="status_confirmed">Potwierdzona</string>
+    <string name="status_dispatched_by_sender">Wysłana przez nadawcę</string>
+    <string name="status_taken_by_courier">Przejęta przez kuriera</string>
+    <string name="status_ready_to_pickup">Gotowa do odbioru</string>
+    <string name="status_awaiting_collection">Oczekuje na odbiór</string>
+    <string name="status_ready_to_collect">Gotowa do odbioru</string>
+    <string name="status_out_for_delivery">W dostawie</string>
+    <string name="status_delivered">Dostarczona</string>
+    <string name="status_undelivered">Niedostarczona</string>
+    <string name="status_claimed">Reklamacja</string>
+    <string name="status_adopted_at_sorting_center">Przyjęta w Sortowni</string>
+    <string name="status_adopted_at_source_branch">Przyjęta w Oddziale</string>
+    <string name="status_adopted_at_target_branch">Przyjęta w Oddziale</string>
+    <string name="status_avizo">Powrót do Oddziału</string>
+    <string name="status_avizo_completed">Płatność za przedłużenie czasu odbioru przesyłki została zrealizowana</string>
+    <string name="status_avizo_rejected">Płatność za przedłużenie czasu odbioru przesyłki została odrzucona</string>
+    <string name="status_c2x_completed">Płatność za nadanie przesyłki została zrealizowana</string>
+    <string name="status_c2x_rejected">Płatność za nadanie przesyłki została odrzucona</string>
+    <string name="status_canceled">Anulowano etykietę</string>
+    <string name="status_canceled_redirect_to_box">Przekierowanie anulowane</string>
+    <string name="status_cod_completed">Płatność za przesyłkę została zrealizowana</string>
+    <string name="status_cod_rejected">Płatność za przesyłkę została odrzucona</string>
+    <string name="status_collected_by_customer">Odebrana przez klienta</string>
+    <string name="status_collected_from_sender">Odebrana od Nadawcy</string>
+    <string name="status_created">Przesyłka utworzona</string>
+    <string name="status_delay_in_delivery">Doręczenie opóźnione</string>
+    <string name="status_delivery_attempt_failed">Próba doręczenia nieudana</string>
+    <string name="status_dispatched_by_sender_to_pok">Nadana w PaczkoPunkcie</string>
+    <string name="status_missing">Zaginiona</string>
+    <string name="status_not_collected">Nieodebrana, zwrot do nadawcy</string>
+    <string name="status_offer_selected">Oferta wybrana</string>
+    <string name="status_offers_prepared">Oferta gotowa</string>
+    <string name="status_other">Inny status</string>
+    <string name="status_out_for_delivery_to_address">Gotowa do doręczenia</string>
+    <string name="status_oversized">Przekroczenie gabarytu</string>
+    <string name="status_permanently_redirected_to_box_machine">Przekierowana do innego Paczkomatu</string>
+    <string name="status_permanently_redirected_to_customer_service_point">Przekierowana do innego PaczkoPunktu</string>
+    <string name="status_pickup_reminder_sent">Gotowa do odbioru</string>
+    <string name="status_pickup_reminder_sent_address">Kolejna próba doręczenia</string>
+    <string name="status_pickup_time_expired">Upłynął termin odbioru</string>
+    <string name="status_readdressed">Przekierowana na inny adres</string>
+    <string name="status_ready_for_collection">Gotowa do odbioru</string>
+    <string name="status_ready_to_pickup_from_branch">Do odbioru w Oddziale</string>
+    <string name="status_ready_to_pickup_from_pok">Gotowa do odbioru</string>
+    <string name="status_ready_to_pickup_from_pok_registered">Gotowa do odbioru</string>
+    <string name="status_redirect_to_box">Przekierowana</string>
+    <string name="status_rejected_by_receiver">Odmowa przyjęcia</string>
+    <string name="status_return_pickup_confirmation_to_sender">Do zwrotu</string>
+    <string name="status_returned_to_sender">Zwrot do Nadawcy</string>
+    <string name="status_sent_from_sorting_center">Wysłana z Sortowni</string>
+    <string name="status_sent_from_source_branch">Wysłana z Oddziału</string>
+    <string name="status_stack_in_box_machine">Przesyłka magazynowana - Paczkomat tymczasowy</string>
+    <string name="status_stack_in_customer_service_point">Przesyłka magazynowana</string>
+    <string name="status_stack_parcel_in_box_machine_pickup_time_expired">Upłynął termin odbioru przesyłki magazynowanej</string>
+    <string name="status_stack_parcel_pickup_time_expired">Upłynął termin magazynowania</string>
+    <string name="status_taken_by_courier_from_pok">Odebrana z PaczkoPunktu nadawczego</string>
+    <string name="status_undelivered_cod_cash_receiver">Niedoręczona</string>
+    <string name="status_undelivered_incomplete_address">Niedoręczona</string>
+    <string name="status_undelivered_lack_of_access_letterbox">Niedoręczona</string>
+    <string name="status_undelivered_no_mailbox">Niedoręczona</string>
+    <string name="status_undelivered_not_live_address">Niedoręczona</string>
+    <string name="status_undelivered_unknown_receiver">Niedoręczona</string>
+    <string name="status_undelivered_wrong_address">Niedoręczona</string>
+    <string name="status_unstack_from_box_machine">Przesyłka jest już w drodze. Twój Paczkomat już na nią czeka</string>
+    <string name="status_unstack_from_customer_service_point">Wydana do doręczenia</string>
+    <string name="status_group_other">Inny</string>
+    <string name="status_group_to_send">paczka do wysłania</string>
+    <string name="status_group_created">paczka utworzona</string>
+    <string name="status_group_in_transit">paczka w transporcie</string>
+    <string name="status_group_in_delivery">paczka w dostawie</string>
+    <string name="status_group_to_pickup">paczka gotowa do odbioru</string>
+    <string name="status_group_delivered">paczka dostarczona</string>
+    <string name="status_group_undelivered">paczka niedostarczona</string>
+    <string name="status_group_claimed">paczka w reklamacji</string>
+
+    <!-- Ustawienia -->
+    <string name="settings_language">Język</string>
+    <string name="settings_language_description">Wybierz język aplikacji. Zmiana jest stosowana natychmiast.</string>
+    <string name="settings_backend">Backend</string>
+    <string name="settings_backend_description">Które API przesyłek ma być używane. Automatyczny najpierw próbuje endpointu PL (v4), potem globalnego.</string>
+    <string name="backend_auto">Automatyczny</string>
+    <string name="backend_v4">v4 (PL)</string>
+    <string name="backend_global">Globalny</string>
+    <string name="settings_simplified">Tryb uproszczony</string>
+    <string name="settings_simplified_description">Większy tekst, czytelniejsze przyciski i prosta lista paczek. Zalecane dla starszych użytkowników.</string>
+    <string name="settings_pickup_image">Zdjęcie punktu odbioru</string>
+    <string name="settings_pickup_image_description">Pobierz i pokaż zdjęcie punktu odbioru. Buforowane przez 24 godziny. Domyślnie wyłączone.</string>
+</resources>

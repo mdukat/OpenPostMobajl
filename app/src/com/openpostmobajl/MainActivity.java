@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -12,8 +15,11 @@ import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
+import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -24,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -39,19 +46,34 @@ import java.util.UUID;
  * parcel list is shown. On later launches the saved token is used (and refreshed
  * if needed) without showing the login page.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends BaseActivity {
 
     private FrameLayout root;
     private LinearLayout panel;
     private TextView status;
     private LinearLayout list;
     private WebView webView;
-    private Button backendBtn;
     private LinearLayout sidebar;
     private View scrim;
     private boolean sidebarOpen = false;
+    private boolean simplified = false;
     private AuthState state;
     private boolean codeHandled = false;
+
+    // Live countdown to expiryDate for the rendered ready-to-pickup rows.
+    private final List<TextView> rowViews = new ArrayList<TextView>();
+    private final List<String> rowBase = new ArrayList<String>();
+    private final List<Long> rowExpiry = new ArrayList<Long>();
+    private boolean hasCountdown = false;
+    private boolean resumed = false;
+    private final Handler countdownHandler = new Handler(Looper.getMainLooper());
+    private final Runnable countdownTick = new Runnable() {
+        @Override
+        public void run() {
+            updateCountdowns();
+            countdownHandler.postDelayed(this, 1000);
+        }
+    };
 
     private static final int SIDEBAR_WIDTH_DP = 280;
 
@@ -71,7 +93,16 @@ public class MainActivity extends Activity {
             state.createdAt = nowIso();
         }
 
+        simplified = AppSettings.isSimplified(this);
         setContentView(buildPanel());
+        if (Build.VERSION.SDK_INT >= 33) {
+            BackApi33.register(this, new Runnable() {
+                @Override
+                public void run() {
+                    handleBack();
+                }
+            });
+        }
 
         boolean haveCredentials = (state.authToken != null && state.authToken.length() > 0)
                 || (state.refreshToken != null && state.refreshToken.length() > 0);
@@ -104,9 +135,15 @@ public class MainActivity extends Activity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button burger = new Button(this);
-        burger.setText("\u2261"); // ≡ (safe burger glyph)
-        burger.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
-        burger.setPadding(dp(8), 0, dp(8), 0);
+        if (simplified) {
+            burger.setText(R.string.common_menu);
+            burger.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            burger.setPadding(dp(14), dp(12), dp(14), dp(12));
+        } else {
+            burger.setText("\u2261"); // ≡ (safe burger glyph)
+            burger.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
+            burger.setPadding(dp(8), 0, dp(8), 0);
+        }
         burger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -116,13 +153,33 @@ public class MainActivity extends Activity {
         topBar.addView(burger, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        if (simplified) {
+            // Older users may not find Refresh in the sidebar, so keep it in the
+            // top bar next to "Menu".
+            Button quickRefresh = new Button(this);
+            quickRefresh.setText(R.string.common_refresh);
+            quickRefresh.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            quickRefresh.setPadding(dp(14), dp(12), dp(14), dp(12));
+            quickRefresh.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    loadParcels();
+                }
+            });
+            topBar.addView(quickRefresh, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+
         panel.addView(topBar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         status = new TextView(this);
         status.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         status.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
-        status.setText("Ready.");
+        status.setText(R.string.main_status_ready);
+        if (simplified) {
+            status.setVisibility(View.GONE);
+        }
         panel.addView(status, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -162,7 +219,7 @@ public class MainActivity extends Activity {
         sideHeader.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView menuTitle = new TextView(this);
-        menuTitle.setText("Menu");
+        menuTitle.setText(R.string.common_menu);
         menuTitle.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         menuTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
         sideHeader.addView(menuTitle, new LinearLayout.LayoutParams(
@@ -184,7 +241,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         Button refresh = new Button(this);
-        refresh.setText("Refresh");
+        refresh.setText(R.string.common_refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -196,7 +253,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         Button delivered = new Button(this);
-        delivered.setText("Delivered parcels");
+        delivered.setText(R.string.common_delivered_parcels);
         delivered.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -207,20 +264,28 @@ public class MainActivity extends Activity {
         sidebar.addView(delivered, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        backendBtn = new Button(this);
-        backendBtn.setText(backendLabel());
-        backendBtn.setOnClickListener(new View.OnClickListener() {
+        if (simplified) {
+            // Simplified mode: keep Settings/Licenses at the bottom, away from the
+            // everyday actions above.
+            View spacer = new View(this);
+            sidebar.addView(spacer, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        }
+
+        Button settings = new Button(this);
+        settings.setText(R.string.common_settings);
+        settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 closeSidebar();
-                cycleBackend();
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
             }
         });
-        sidebar.addView(backendBtn, new LinearLayout.LayoutParams(
+        sidebar.addView(settings, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         Button licenses = new Button(this);
-        licenses.setText("Licenses");
+        licenses.setText(R.string.common_licenses);
         licenses.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -231,17 +296,19 @@ public class MainActivity extends Activity {
         sidebar.addView(licenses, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        Button signOut = new Button(this);
-        signOut.setText("Sign out");
-        signOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeSidebar();
-                signOut();
-            }
-        });
-        sidebar.addView(signOut, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        if (!simplified) {
+            Button signOut = new Button(this);
+            signOut.setText(R.string.common_sign_out);
+            signOut.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    closeSidebar();
+                    signOut();
+                }
+            });
+            sidebar.addView(signOut, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
 
         FrameLayout.LayoutParams sideLp = new FrameLayout.LayoutParams(
                 dp(SIDEBAR_WIDTH_DP), ViewGroup.LayoutParams.MATCH_PARENT);
@@ -292,8 +359,7 @@ public class MainActivity extends Activity {
             String url = Pkce.buildAuthorizeUrl(oauthState, nonce, verifier, ApiClient.languageTag());
             state.authorizeUrl = url;
 
-            status.setText("Log in with your phone number and SMS code. "
-                    + "The app continues automatically after the redirect.");
+            status.setText(R.string.main_login_prompt);
             showWebView(url);
         } catch (Exception e) {
             showError(e);
@@ -324,11 +390,6 @@ public class MainActivity extends Activity {
         cm.setAcceptThirdPartyCookies(webView, true);
 
         webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String u) {
-                return handleUrl(u);
-            }
-
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return handleUrl(request.getUrl().toString());
@@ -367,7 +428,7 @@ public class MainActivity extends Activity {
             }
             if (code != null && code.length() > 0) {
                 codeHandled = true;
-                status.setText("Exchanging authorization code...");
+                status.setText(R.string.main_exchanging_code);
                 if (webView != null) {
                     webView.stopLoading();
                     root.removeView(webView);
@@ -407,7 +468,10 @@ public class MainActivity extends Activity {
     }
 
     private void loadParcels() {
-        status.setText(list.getChildCount() > 0 ? "Updating..." : "Loading parcels...");
+        status.setText(list.getChildCount() > 0
+                ? getString(R.string.main_status_updating)
+                : getString(R.string.main_status_loading));
+        status.setVisibility(simplified ? View.GONE : View.VISIBLE);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -436,36 +500,49 @@ public class MainActivity extends Activity {
 
     private void render(ApiClient.ParcelResult res, boolean cached) {
         list.removeAllViews();
+        status.setVisibility(simplified ? View.GONE : View.VISIBLE);
+        rowViews.clear();
+        rowBase.clear();
+        rowExpiry.clear();
+        hasCountdown = false;
 
         List<JSONObject> sorted = ParcelUi.sorted(res.parcels, false);
         List<ParcelEntry> items = ParcelUi.grouped(sorted);
 
         int n = sorted.size();
         if (cached) {
-            status.setText("Cached " + res.backend + " | parcels: " + n + " — updating...");
+            status.setText(getString(R.string.main_status_cached, res.backend, n));
         } else {
-            status.setText("Backend: " + res.backend + " (pref " + state.backendPreference
-                    + ") | parcels: " + n);
+            status.setText(getString(R.string.main_status_backend, res.backend,
+                    state.backendPreference, n));
         }
 
         if (items.isEmpty()) {
             TextView tv = new TextView(this);
-            tv.setText("No parcels found.");
+            tv.setText(R.string.main_no_parcels);
             tv.setPadding(0, dp(8), 0, dp(8));
             list.addView(tv);
+            syncCountdownTimer();
             return;
         }
 
         for (int i = 0; i < items.size(); i++) {
             final ParcelEntry entry = items.get(i);
-            String text = entry.isMulti()
-                    ? ParcelUi.multiCompartmentRowText(entry)
-                    : ParcelUi.rowText(entry.first);
+            String base = simplified
+                    ? ParcelUi.simplifiedRowText(this, entry)
+                    : (entry.isMulti()
+                    ? ParcelUi.multiCompartmentRowText(this, entry)
+                    : ParcelUi.rowText(entry.first));
+            final long expiry = entry.expiryMillis();
             TextView tv = new TextView(this);
-            tv.setText(text);
+            tv.setText(expiry > 0 ? base + "\n" + ParcelUi.expiryText(this, expiry) : base);
             tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-            tv.setPadding(0, dp(12), 0, dp(12));
+            if (simplified) {
+                Ui.applyBorderedRow(this, tv);
+            } else {
+                tv.setPadding(0, dp(12), 0, dp(12));
+            }
             tv.setClickable(true);
             tv.setFocusable(true);
             tv.setOnClickListener(new View.OnClickListener() {
@@ -491,37 +568,39 @@ public class MainActivity extends Activity {
             });
             list.addView(tv);
 
-            View divider = new View(this);
-            divider.setBackgroundColor(Color.LTGRAY);
-            list.addView(divider, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            rowViews.add(tv);
+            rowBase.add(base);
+            rowExpiry.add(Long.valueOf(expiry));
+            if (expiry > 0) {
+                hasCountdown = true;
+            }
+
+            if (!simplified) {
+                View divider = new View(this);
+                divider.setBackgroundColor(Color.LTGRAY);
+                list.addView(divider, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            }
+        }
+
+        syncCountdownTimer();
+    }
+
+    private void updateCountdowns() {
+        for (int i = 0; i < rowViews.size(); i++) {
+            long expiry = rowExpiry.get(i).longValue();
+            if (expiry > 0) {
+                rowViews.get(i).setText(
+                        rowBase.get(i) + "\n" + ParcelUi.expiryText(this, expiry));
+            }
         }
     }
 
-    private String backendLabel() {
-        String p = state.backendPreference == null ? "auto" : state.backendPreference;
-        return "Backend: " + p;
-    }
-
-    private void cycleBackend() {
-        String p = state.backendPreference == null ? "auto" : state.backendPreference;
-        if ("auto".equals(p)) {
-            state.backendPreference = "v4";
-        } else if ("v4".equals(p)) {
-            state.backendPreference = "global";
-        } else {
-            state.backendPreference = "auto";
+    private void syncCountdownTimer() {
+        countdownHandler.removeCallbacks(countdownTick);
+        if (resumed && hasCountdown) {
+            countdownHandler.post(countdownTick);
         }
-        try {
-            AuthStore.save(this, state);
-        } catch (Exception e) {
-            showError(e);
-            return;
-        }
-        if (backendBtn != null) {
-            backendBtn.setText(backendLabel());
-        }
-        loadParcels();
     }
 
     private void signOut() {
@@ -530,28 +609,76 @@ public class MainActivity extends Activity {
         ParcelCache.delete(this);
         if (webView != null) {
             webView.stopLoading();
+            webView.clearCache(true);
+            webView.clearHistory();
+            webView.clearFormData();
             root.removeView(webView);
             webView.destroy();
             webView = null;
         }
-        CookieManager.getInstance().removeAllCookies(null);
+        // Drop everything the login WebView may have persisted, not just cookies.
+        WebStorage.getInstance().deleteAllData();
+        CookieManager cm = CookieManager.getInstance();
+        cm.removeAllCookies(null);
+        cm.flush();
         codeHandled = false;
         state = new AuthState();
         state.deviceUID = UUID.randomUUID().toString();
         state.createdAt = nowIso();
-        if (backendBtn != null) {
-            backendBtn.setText(backendLabel());
-        }
         list.removeAllViews();
         startLogin();
     }
 
     private void showError(Exception e) {
-        status.setText("Error: " + e.getMessage());
+        status.setText(getString(R.string.common_error, e.getMessage()));
+        // Simplified mode hides the status line, but errors must still be visible.
+        status.setVisibility(View.VISIBLE);
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        resumed = true;
+        syncCountdownTimer();
+        reloadBackendPreference();
+    }
+
+    /**
+     * The backend is chosen in Settings, which writes it to auth.json; pick it
+     * up here and refresh when it changed.
+     */
+    private void reloadBackendPreference() {
+        try {
+            String pref = AuthStore.load(this).backendPreference;
+            if (pref == null) {
+                pref = "auto";
+            }
+            String current = state.backendPreference == null ? "auto" : state.backendPreference;
+            if (!pref.equals(current)) {
+                state.backendPreference = pref;
+                if (state.authToken != null && state.authToken.length() > 0) {
+                    loadParcels();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        resumed = false;
+        countdownHandler.removeCallbacks(countdownTick);
+        super.onPause();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
     public void onBackPressed() {
+        // Pre-API 33 path; on 33+ BackApi33 registers a predictive-back callback.
+        handleBack();
+    }
+
+    private void handleBack() {
         if (sidebarOpen) {
             closeSidebar();
             return;
@@ -560,11 +687,29 @@ public class MainActivity extends Activity {
             webView.goBack();
             return;
         }
-        super.onBackPressed();
+        finish();
+    }
+
+    /**
+     * Predictive-back registration (API 33+), isolated in its own class so
+     * devices below API 33 never load the newer types.
+     */
+    private static final class BackApi33 {
+        static void register(Activity activity, final Runnable onBack) {
+            activity.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    new OnBackInvokedCallback() {
+                        @Override
+                        public void onBackInvoked() {
+                            onBack.run();
+                        }
+                    });
+        }
     }
 
     @Override
     protected void onDestroy() {
+        countdownHandler.removeCallbacks(countdownTick);
         if (webView != null) {
             webView.stopLoading();
             webView.destroy();

@@ -22,12 +22,13 @@ import org.json.JSONObject;
  * Full parcel view. Shows a locally generated QR code at the top for delivered
  * and ready-to-pickup parcels, a short summary, and the complete backend JSON.
  */
-public class ParcelDetailActivity extends Activity {
+public class ParcelDetailActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        boolean simplified = AppSettings.isSimplified(this);
         String json = getIntent().getStringExtra("parcel");
         JSONObject parcel = null;
         try {
@@ -46,7 +47,7 @@ public class ParcelDetailActivity extends Activity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button back = new Button(this);
-        back.setText("\u2190 Back");
+        back.setText(R.string.common_back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,13 +57,15 @@ public class ParcelDetailActivity extends Activity {
         topBar.addView(back, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        TextView title = new TextView(this);
-        title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
-        title.setPadding(dp(8), 0, 0, 0);
-        title.setText("Parcel " + ParcelUi.last6(parcel));
-        topBar.addView(title, new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        if (!simplified) {
+            TextView title = new TextView(this);
+            title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+            title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+            title.setPadding(dp(8), 0, 0, 0);
+            title.setText(getString(R.string.detail_title, ParcelUi.last6(parcel)));
+            topBar.addView(title, new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        }
 
         root.addView(topBar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -83,12 +86,15 @@ public class ParcelDetailActivity extends Activity {
             if (("DELIVERED".equalsIgnoreCase(group) || readyToPickup) && qr.length() > 0) {
                 Bitmap bmp = QrCode.generate(qr, 600);
                 if (bmp != null) {
-                    TextView qrLabel = new TextView(this);
-                    qrLabel.setText("QR code");
-                    qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-                    qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
-                    content.addView(qrLabel, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (!simplified) {
+                        TextView qrLabel = new TextView(this);
+                        qrLabel.setText(R.string.common_qr_code);
+                        qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                        qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+                        content.addView(qrLabel, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
 
                     ImageView qrView = new ImageView(this);
                     qrView.setImageBitmap(bmp);
@@ -110,54 +116,91 @@ public class ParcelDetailActivity extends Activity {
                     qrLp.bottomMargin = dp(8);
                     content.addView(qrView, qrLp);
 
-                    TextView qrText = new TextView(this);
-                    qrText.setText(qr);
-                    qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
-                    qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
-                    qrText.setTypeface(Typeface.MONOSPACE);
-                    qrText.setTextIsSelectable(true);
-                    content.addView(qrText, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (simplified) {
+                        TextView qrHint = new TextView(this);
+                        qrHint.setText(R.string.detail_qr_hint);
+                        qrHint.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrHint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                        qrHint.setGravity(Gravity.CENTER_HORIZONTAL);
+                        qrHint.setPadding(0, 0, 0, dp(8));
+                        content.addView(qrHint, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
+
+                    if (!simplified) {
+                        TextView qrText = new TextView(this);
+                        qrText.setText(qr);
+                        qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
+                        qrText.setTypeface(Typeface.MONOSPACE);
+                        qrText.setTextIsSelectable(true);
+                        content.addView(qrText, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
                 }
             }
 
             // ---- summary ----
-            TextView summary = new TextView(this);
-            summary.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-            summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-            summary.setText(
-                    "Shipment: " + parcel.optString("shipmentNumber",
-                            parcel.optString("primaryParcelNumber", "")) + "\n"
-                    + "Status: " + parcel.optString("status", "")
-                    + " (" + parcel.optString("statusGroup", "") + ")\n"
-                    + "Pickup point: " + ParcelUi.pointName(parcel) + "\n"
-                    + "Sender: " + ParcelUi.senderName(parcel));
-            summary.setPadding(0, dp(8), 0, dp(8));
-            content.addView(summary, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-            View divider = new View(this);
-            divider.setBackgroundColor(Color.LTGRAY);
-            content.addView(divider, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, 1));
-
-            // ---- full JSON ----
-            TextView dump = new TextView(this);
-            dump.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-            dump.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-            dump.setTypeface(Typeface.MONOSPACE);
-            dump.setTextIsSelectable(true);
-            dump.setPadding(0, dp(8), 0, dp(8));
-            try {
-                dump.setText(parcel.toString(2));
-            } catch (Exception e) {
-                dump.setText(String.valueOf(parcel));
+            String number = parcel.optString("shipmentNumber",
+                    parcel.optString("primaryParcelNumber", ""));
+            String pickup = ParcelUi.pickupDetails(parcel);
+            if (simplified) {
+                // Separate, labeled blocks are easier to read than one big block.
+                // Sender first, right below the QR code.
+                Ui.addBlock(this, content, R.string.detail_label_sender, ParcelUi.senderName(parcel));
+                String pickupCode = ParcelUi.pickupCode(parcel);
+                if (pickupCode.length() > 0) {
+                    Ui.addBlock(this, content, R.string.detail_label_pickup_code, pickupCode);
+                }
+                Ui.addBlock(this, content, R.string.detail_label_number, number);
+                Ui.addBlock(this, content, R.string.detail_label_status,
+                        ParcelUi.statusText(this, status, group));
+                Ui.addBlock(this, content, R.string.detail_label_pickup_point,
+                        pickup.length() == 0 ? ParcelUi.pointName(parcel) : pickup);
+                if (AppSettings.isPickupImageEnabled(this)) {
+                    PickupImageLoader.loadInto(this, content, ParcelUi.pickupImageUrl(parcel));
+                }
+            } else {
+                TextView summary = new TextView(this);
+                summary.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                summary.setText(
+                        getString(R.string.detail_shipment, number) + "\n"
+                        + getString(R.string.detail_status, status, group) + "\n"
+                        + getString(R.string.detail_pickup_point, ParcelUi.pointName(parcel)) + "\n"
+                        + getString(R.string.detail_sender, ParcelUi.senderName(parcel)));
+                summary.setPadding(0, dp(8), 0, dp(8));
+                content.addView(summary, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
             }
-            content.addView(dump, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            // ---- full JSON (hidden in simplified mode) ----
+            if (!simplified) {
+                View divider = new View(this);
+                divider.setBackgroundColor(Color.LTGRAY);
+                content.addView(divider, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 1));
+
+                TextView dump = new TextView(this);
+                dump.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                dump.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+                dump.setTypeface(Typeface.MONOSPACE);
+                dump.setTextIsSelectable(true);
+                dump.setPadding(0, dp(8), 0, dp(8));
+                try {
+                    dump.setText(parcel.toString(2));
+                } catch (Exception e) {
+                    dump.setText(String.valueOf(parcel));
+                }
+                content.addView(dump, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
         } else {
             TextView error = new TextView(this);
-            error.setText("Could not read parcel data.");
+            error.setText(R.string.detail_error);
             error.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             content.addView(error);
         }

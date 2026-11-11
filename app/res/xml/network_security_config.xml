@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network security configuration.
+
+  - Cleartext (HTTP) traffic is disabled everywhere.
+  - The InPost API and OAuth hosts are pinned to the SHA-256 SPKI of the
+    certificates currently served by those hosts. Several certificates from
+    each chain (leaf, intermediate, root) are listed so a leaf rotation that
+    reuses the issuer/root does not break connectivity.
+
+  Pins expire so a pinned build does not permanently lose connectivity if the
+  certificate chain changes before the app is updated: after the expiration
+  date Android falls back to normal certificate validation.
+
+  To refresh a pin:
+    openssl s_client -connect HOST:443 -servername HOST -showcerts </dev/null \
+      | openssl x509 -pubkey -noout \
+      | openssl pkey -pubin -outform der \
+      | openssl dgst -sha256 -binary | openssl enc -base64
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">account.inpost-group.com</domain>
+        <pin-set expiration="2027-12-31">
+            <!-- leaf: CN=inpost-group.com -->
+            <pin digest="SHA-256">R6yQwUL+6UzkEAeYxC1TB1cMURVVeZmG1Kt9pYM9tJg=</pin>
+            <!-- intermediate: Google Trust Services WE1 -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+            <!-- root: GTS Root R4 -->
+            <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
+        </pin-set>
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">easypack24.net</domain>
+        <pin-set expiration="2027-12-31">
+            <!-- leaf: CN=*.easypack24.net -->
+            <pin digest="SHA-256">h9NElMPr2kZi2rrh7XPr+LQ5oZILqdPaiSjwgxvy4CY=</pin>
+            <!-- intermediate: GeoTrust TLS RSA CA G1 -->
+            <pin digest="SHA-256">SDG5orEv8iX6MNenIAxa8nQFNpROB/6+llsZdXHZNqs=</pin>
+            <!-- root: DigiCert Global Root G2 -->
+            <pin digest="SHA-256">i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</pin>
+        </pin-set>
+    </domain-config>
+</network-security-config>

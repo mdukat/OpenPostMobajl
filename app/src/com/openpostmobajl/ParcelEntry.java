@@ -40,4 +40,19 @@ final class ParcelEntry {
     boolean isMulti() {
         return multiUuid != null && parcels.size() > 1;
     }
+
+    /**
+     * Earliest expiry among this entry's ready-to-pickup parcels, or 0 when
+     * none of them carries a valid {@code expiryDate}.
+     */
+    long expiryMillis() {
+        long best = 0;
+        for (int i = 0; i < parcels.size(); i++) {
+            long t = ParcelUi.expiryMillis(parcels.get(i));
+            if (t > 0 && (best == 0 || t < best)) {
+                best = t;
+            }
+        }
+        return best;
+    }
 }

@@ -1,6 +1,7 @@
 package com.openpostmobajl;
 
 import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
 
@@ -23,7 +24,11 @@ import javax.crypto.spec.GCMParameterSpec;
  * AES/GCM encryption backed by a non-exportable Android Keystore key.
  *
  * The on-disk envelope is JSON:
- *   {"v":1,"iv":"<base64>","data":"<base64 ciphertext>"}
+ *   {"v":2,"iv":"<base64>","data":"<base64 ciphertext>"}
+ *
+ * Each envelope is bound to a purpose string as GCM associated data (AAD), so
+ * an envelope cannot be moved between files (for example swapping auth.json
+ * and parcels.json still fails authentication).
  *
  * The key never leaves the keystore. If the key is invalidated (for example by
  * a lock-screen change), it is recreated and the caller falls back to a fresh
@@ -35,22 +40,29 @@ final class SecureStore {
     private static final String ANDROID_KEYSTORE = "AndroidKeyStore";
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int GCM_TAG_BITS = 128;
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
+    private static final int MAX_FILE_BYTES = 16 * 1024 * 1024;
 
     private SecureStore() {
     }
 
-    static byte[] encrypt(byte[] plaintext) throws Exception {
+    static byte[] encrypt(byte[] plaintext, String purpose) throws Exception {
         try {
-            return encryptWithKey(plaintext);
-        } catch (Exception e) {
-            // A key can be invalidated by lock-screen changes. Recreate it once.
+            return encryptWithKey(plaintext, purpose);
+        } catch (KeyPermanentlyInvalidatedException e) {
+            // The key was invalidated (for example by a lock-screen change).
+            // Recreate it once and retry; do not delete key material for any
+            // other error, otherwise a transient failure would wipe the data.
             deleteKey();
-            return encryptWithKey(plaintext);
+            return encryptWithKey(plaintext, purpose);
+        } catch (UnrecoverableKeyException e) {
+            // The key exists but its material cannot be read. Recreate once.
+            deleteKey();
+            return encryptWithKey(plaintext, purpose);
         }
     }
 
-    static byte[] decrypt(byte[] envelope) throws Exception {
+    static byte[] decrypt(byte[] envelope, String purpose) throws Exception {
         JSONObject o = new JSONObject(new String(envelope, "UTF-8"));
         if (o.optInt("v", 0) != VERSION) {
             throw new Exception("unsupported envelope version");
@@ -60,6 +72,7 @@ final class SecureStore {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.DECRYPT_MODE, getOrCreateKey(),
                 new GCMParameterSpec(GCM_TAG_BITS, iv));
+        cipher.updateAAD(purpose.getBytes("UTF-8"));
         return cipher.doFinal(data);
     }
 
@@ -95,9 +108,10 @@ final class SecureStore {
         }
     }
 
-    private static byte[] encryptWithKey(byte[] plaintext) throws Exception {
+    private static byte[] encryptWithKey(byte[] plaintext, String purpose) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKey());
+        cipher.updateAAD(purpose.getBytes("UTF-8"));
         byte[] iv = cipher.getIV();
         byte[] data = cipher.doFinal(plaintext);
         JSONObject o = new JSONObject();
@@ -143,8 +157,14 @@ final class SecureStore {
     private static byte[] readAll(InputStream in) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[8192];
+        int total = 0;
         int n;
         while ((n = in.read(buf)) > 0) {
+            total += n;
+            if (total > MAX_FILE_BYTES) {
+                in.close();
+                throw new Exception("input exceeds " + MAX_FILE_BYTES + " bytes");
+            }
             out.write(buf, 0, n);
         }
         in.close();

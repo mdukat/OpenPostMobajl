@@ -51,6 +51,9 @@ BUILD_TOOLS="${BUILD_TOOLS:-34.0.0}"
 ZXING_VERSION="${ZXING_VERSION:-3.5.3}"
 ZXING_FILE="zxing-core-$ZXING_VERSION.jar"
 ZXING_URL="${ZXING_URL:-https://repo1.maven.org/maven2/com/google/zxing/core/$ZXING_VERSION/core-$ZXING_VERSION.jar}"
+# Pinned SHA-256 of the genuine ZXing core $ZXING_VERSION artifact (the value
+# matches Maven Central's published SHA-1 of the same jar).
+ZXING_SHA256="${ZXING_SHA256:-8d8064c1636fdaef7189dd9055c7d59950a8940a12f2293956446ec3c109fd82}"
 
 # Packages that must be present in the mirror.
 ALPINE_PKGS="openjdk17-jdk openjdk17-jre-headless gcompat libucontext musl-obstack libgcc"
@@ -113,10 +116,18 @@ file_sha1() {
     fi
 }
 
-# manifest_add <type> <name> <filename> [sha1]
+file_sha256() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | cut -d' ' -f1
+    else
+        printf ''
+    fi
+}
+
+# manifest_add <type> <name> <filename> [sha256]
 manifest_add() {
     if [ "${4:-}" = "" ]; then
-        _sha="$(file_sha1 "$MIRROR/$3")"
+        _sha="$(file_sha256 "$MIRROR/$3")"
     else
         _sha="$4"
     fi
@@ -300,13 +311,23 @@ AWKEOF
         line="$(awk -v target="$pkg" -f "$TMP/sdkurl.awk" "$TMP/repo.xml")"
         [ -n "$line" ] || die "Android package not found: $pkg"
         url="${line%%|*}"
-        sha="${line#*|}"
+        sha1="${line#*|}"
         download "$ANDROID_REPO/$url" "$url"
-        manifest_add android "$pkg" "$url" "$sha"
+        # Google still publishes SHA-1 only, so verify it at download time and
+        # then record a stronger SHA-256 in the mirror manifest.
+        if [ -n "$sha1" ]; then
+            _got1="$(file_sha1 "$MIRROR/$url")"
+            [ "$_got1" = "$sha1" ] \
+                || die "checksum mismatch (sha1): $url"
+        fi
+        manifest_add android "$pkg" "$url"
     done
 
     # ---- ZXing core (local QR generation) ----
     download "$ZXING_URL" "$ZXING_FILE"
+    _got="$(file_sha256 "$MIRROR/$ZXING_FILE")"
+    [ "$_got" = "$ZXING_SHA256" ] \
+        || die "ZXing checksum mismatch: expected $ZXING_SHA256, got ${_got:-<no sha256sum>}"
     manifest_add zxing core "$ZXING_FILE"
 }
 
@@ -320,8 +341,8 @@ check_pkgs() {
         _f="$(pkg_file "$_type" "$_pkg")"
         [ -s "$MIRROR/$_f" ] || die "missing file in mirror: $MIRROR/$_f"
         _exp="$(manifest_field "$_type" "$_pkg" 4)"
-        if [ -n "$_exp" ] && command -v sha1sum >/dev/null 2>&1; then
-            _got="$(sha1sum "$MIRROR/$_f" | cut -d' ' -f1)"
+        if [ -n "$_exp" ]; then
+            _got="$(file_sha256 "$MIRROR/$_f")"
             [ "$_got" = "$_exp" ] || die "checksum mismatch: $_f"
         fi
         printf '    ok %s\n' "$_f"
@@ -343,6 +364,9 @@ install_zxing() {
     _src="$MIRROR/$ZXING_FILE"
     _dst="$TARGET/libs/$ZXING_FILE"
     [ -s "$_src" ] || die "missing ZXing jar in mirror: $_src"
+    _got="$(file_sha256 "$_src")"
+    [ "$_got" = "$ZXING_SHA256" ] \
+        || die "ZXing checksum mismatch: expected $ZXING_SHA256, got ${_got:-<no sha256sum>}"
     mkdir -p "$TARGET/libs"
     if [ -s "$_dst" ]; then
         log "ZXing jar already present: $_dst"

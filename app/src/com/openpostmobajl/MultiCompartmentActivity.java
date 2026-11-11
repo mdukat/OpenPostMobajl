@@ -23,11 +23,12 @@ import org.json.JSONObject;
  * first parcel in scan order, followed by the list of parcels the group
  * contains. Each contained parcel can be tapped to open its own detail view.
  */
-public class MultiCompartmentActivity extends Activity {
+public class MultiCompartmentActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean simplified = AppSettings.isSimplified(this);
 
         String json = getIntent().getStringExtra("parcels");
         String uuid = getIntent().getStringExtra("uuid");
@@ -52,7 +53,7 @@ public class MultiCompartmentActivity extends Activity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button back = new Button(this);
-        back.setText("\u2190 Back");
+        back.setText(R.string.common_back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,7 +67,7 @@ public class MultiCompartmentActivity extends Activity {
         title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
         title.setPadding(dp(8), 0, 0, 0);
-        title.setText(ParcelUi.multiCompartmentName(uuid));
+        title.setText(ParcelUi.multiCompartmentName(this, uuid));
         topBar.addView(title, new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
@@ -87,13 +88,15 @@ public class MultiCompartmentActivity extends Activity {
             if (qr.length() > 0) {
                 Bitmap bmp = QrCode.generate(qr, 600);
                 if (bmp != null) {
-                    TextView qrLabel = new TextView(this);
-                    qrLabel.setText("QR code");
-                    qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-                    qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
-                    content.addView(qrLabel, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (!simplified) {
+                        TextView qrLabel = new TextView(this);
+                        qrLabel.setText(R.string.common_qr_code);
+                        qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                        qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+                        content.addView(qrLabel, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
 
                     ImageView qrView = new ImageView(this);
                     qrView.setImageBitmap(bmp);
@@ -115,22 +118,49 @@ public class MultiCompartmentActivity extends Activity {
                     qrLp.bottomMargin = dp(8);
                     content.addView(qrView, qrLp);
 
-                    TextView qrText = new TextView(this);
-                    qrText.setText(qr);
-                    qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
-                    qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
-                    qrText.setTypeface(android.graphics.Typeface.MONOSPACE);
-                    qrText.setTextIsSelectable(true);
-                    content.addView(qrText, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (simplified) {
+                        TextView qrHint = new TextView(this);
+                        qrHint.setText(R.string.detail_qr_hint);
+                        qrHint.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrHint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                        qrHint.setGravity(Gravity.CENTER_HORIZONTAL);
+                        qrHint.setPadding(0, 0, 0, dp(8));
+                        content.addView(qrHint, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    } else {
+                        TextView qrText = new TextView(this);
+                        qrText.setText(qr);
+                        qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
+                        qrText.setTypeface(android.graphics.Typeface.MONOSPACE);
+                        qrText.setTextIsSelectable(true);
+                        content.addView(qrText, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
                 }
+            }
+        }
+
+        // ---- pickup point (same data as the parcel detail view) ----
+        if (first != null) {
+            String pickup = ParcelUi.pickupDetails(first);
+            if (pickup.length() == 0) {
+                pickup = ParcelUi.pointName(first);
+            }
+            if (pickup.length() > 0) {
+                Ui.addBlock(this, content, R.string.detail_label_pickup_point, pickup);
+            }
+            if (AppSettings.isPickupImageEnabled(this)) {
+                PickupImageLoader.loadInto(this, content, ParcelUi.pickupImageUrl(first));
             }
         }
 
         // ---- contained parcels ----
         TextView section = new TextView(this);
-        section.setText(parcels.length() == 1 ? "1 parcel" : parcels.length() + " parcels");
+        section.setText(getResources().getQuantityString(
+                R.plurals.multi_parcels, parcels.length(), parcels.length()));
         section.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         section.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
         section.setPadding(0, dp(8), 0, dp(8));
@@ -143,10 +173,18 @@ public class MultiCompartmentActivity extends Activity {
                 continue;
             }
             TextView tv = new TextView(this);
-            tv.setText(ParcelUi.rowText(p));
+            if (simplified) {
+                tv.setText(ParcelUi.simplifiedRowText(this, p));
+            } else {
+                tv.setText(ParcelUi.rowText(p));
+            }
             tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-            tv.setPadding(0, dp(12), 0, dp(12));
+            if (simplified) {
+                Ui.applyBorderedRow(this, tv);
+            } else {
+                tv.setPadding(0, dp(12), 0, dp(12));
+            }
             tv.setClickable(true);
             tv.setFocusable(true);
             tv.setOnClickListener(new View.OnClickListener() {
@@ -160,10 +198,12 @@ public class MultiCompartmentActivity extends Activity {
             });
             content.addView(tv);
 
-            View divider = new View(this);
-            divider.setBackgroundColor(Color.LTGRAY);
-            content.addView(divider, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            if (!simplified) {
+                View divider = new View(this);
+                divider.setBackgroundColor(Color.LTGRAY);
+                content.addView(divider, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            }
         }
 
         root.addView(scroll, new LinearLayout.LayoutParams(

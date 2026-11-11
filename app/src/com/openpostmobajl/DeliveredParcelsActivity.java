@@ -21,11 +21,12 @@ import java.util.List;
 /**
  * Shows only delivered parcels from the encrypted cache.
  */
-public class DeliveredParcelsActivity extends Activity {
+public class DeliveredParcelsActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean simplified = AppSettings.isSimplified(this);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -37,7 +38,7 @@ public class DeliveredParcelsActivity extends Activity {
         topBar.setGravity(Gravity.CENTER_VERTICAL);
 
         Button back = new Button(this);
-        back.setText("\u2190 Back");
+        back.setText(R.string.common_back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,7 +49,7 @@ public class DeliveredParcelsActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView title = new TextView(this);
-        title.setText("Delivered parcels");
+        title.setText(R.string.delivered_title);
         title.setTextColor(Color.rgb(0x11, 0x11, 0x11));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
         title.setPadding(dp(8), 0, 0, 0);
@@ -78,10 +79,10 @@ public class DeliveredParcelsActivity extends Activity {
                 ? new ArrayList<JSONObject>()
                 : ParcelUi.sorted(res.parcels, true);
 
-        status.setText("Delivered parcels: " + items.size());
+        status.setText(getString(R.string.delivered_count, items.size()));
         if (items.isEmpty()) {
             TextView empty = new TextView(this);
-            empty.setText("No delivered parcels.");
+            empty.setText(R.string.delivered_empty);
             empty.setTextColor(Color.rgb(0x11, 0x11, 0x11));
             empty.setPadding(0, dp(8), 0, dp(8));
             list.addView(empty);
@@ -89,10 +90,18 @@ public class DeliveredParcelsActivity extends Activity {
             for (int i = 0; i < items.size(); i++) {
                 final JSONObject p = items.get(i);
                 TextView tv = new TextView(this);
-                tv.setText(ParcelUi.rowText(p));
+                if (simplified) {
+                    tv.setText(ParcelUi.simplifiedRowText(this, p));
+                } else {
+                    tv.setText(ParcelUi.rowText(p));
+                }
                 tv.setTextColor(Color.rgb(0x11, 0x11, 0x11));
                 tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-                tv.setPadding(0, dp(12), 0, dp(12));
+                if (simplified) {
+                    Ui.applyBorderedRow(this, tv);
+                } else {
+                    tv.setPadding(0, dp(12), 0, dp(12));
+                }
                 tv.setClickable(true);
                 tv.setFocusable(true);
                 tv.setOnClickListener(new View.OnClickListener() {
@@ -106,10 +115,12 @@ public class DeliveredParcelsActivity extends Activity {
                 });
                 list.addView(tv);
 
-                View divider = new View(this);
-                divider.setBackgroundColor(Color.LTGRAY);
-                list.addView(divider, new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                if (!simplified) {
+                    View divider = new View(this);
+                    divider.setBackgroundColor(Color.LTGRAY);
+                    list.addView(divider, new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                }
             }
         }
 

@@ -10,7 +10,7 @@ plain `android.widget` views. Read [Conventions](#conventions) and
 [Adding a new view](#adding-a-new-view) before writing code.
 
 Line numbers below are approximate and will drift; method names are the stable
-reference. Version noted here: **1.1** (`versionCode` 2).
+reference. Version noted here: **1.2** (`versionCode` 3).
 
 ---
 
@@ -25,8 +25,9 @@ MainActivity
    │                              ├─ QR tap        ──► QrFullscreenActivity
    │                              └─ contained row ──► ParcelDetailActivity
    ├─ sidebar: Delivered parcels ──► DeliveredParcelsActivity ──► ParcelDetailActivity
+   ├─ sidebar: Settings          ──► SettingsActivity
    ├─ sidebar: Licenses          ──► LicensesActivity
-   └─ sidebar: Refresh / Backend / Sign out (stay in MainActivity)
+   └─ sidebar: Refresh / Sign out (stay in MainActivity)
 ```
 
 There is no separate login activity: `MainActivity` hosts the OAuth `WebView`
@@ -41,6 +42,7 @@ as an overlay on top of the list.
 | `MainActivity` | `MainActivity.java` | Launcher. Login WebView + parcel list + sidebar. | — |
 | `ParcelDetailActivity` | `ParcelDetailActivity.java` | One parcel: QR, summary, full JSON. | `parcel` = single JSON object string |
 | `MultiCompartmentActivity` | `MultiCompartmentActivity.java` | A "MULTISKRYTKA" group: one QR + member list. | `parcels` = JSON array string, `uuid` = group uuid |
+| `SettingsActivity` | `SettingsActivity.java` | Language picker; applies immediately. | — |
 | `DeliveredParcelsActivity` | `DeliveredParcelsActivity.java` | Delivered parcels from the cache only (no network). | — |
 | `QrFullscreenActivity` | `QrFullscreenActivity.java` | Fullscreen QR at max brightness; tap to close. | `qr` = payload string |
 | `LicensesActivity` | `LicensesActivity.java` | Bundled `LICENSE.md` + `THIRD-PARTY-LICENSES.md`. | — |
@@ -99,7 +101,7 @@ Key methods:
 | `startLogin` / `showWebView` / `handleUrl` / `exchangeCode` | OAuth flow; intercepts the redirect, exchanges the code, saves auth, then loads parcels |
 | `loadParcels` | background fetch + refresh, posts to `render`, saves cache |
 | `render` | **the list renderer** (see below) |
-| `cycleBackend` | cycles `auto → v4 → global`, saves, reloads |
+| `updateCountdowns` / `syncCountdownTimer` / `onResume` / `onPause` | live expiry countdown: a 1 s `Handler` tick while the main view is resumed |
 | `signOut` | deletes auth + cache, clears cookies, restarts login |
 | `showError` | writes `Error: …` into the status line |
 | `nowIso` | static ISO-8601 UTC helper reused by `ApiClient`/`ParcelCache` |
@@ -107,7 +109,8 @@ Key methods:
 
 Main panel layout (top to bottom): burger button, `status` `TextView`, a
 `ScrollView` containing the `list` `LinearLayout`. Sidebar buttons: **Refresh**,
-**Delivered parcels**, **Backend: …**, **Licenses**, **Sign out**.
+**Delivered parcels**, **Settings**, **Licenses**, **Sign out**. In simplified
+mode a weighted spacer pushes **Settings** and **Licenses** to the bottom.
 
 `render(res, cached)` is the single place that turns data into rows:
 
@@ -118,6 +121,15 @@ Main panel layout (top to bottom): burger button, `status` `TextView`, a
 4. For each `ParcelEntry`: group rows use `ParcelUi.multiCompartmentRowText`
    and open `MultiCompartmentActivity`; single rows use `ParcelUi.rowText` and
    open `ParcelDetailActivity`.
+5. Ready-to-pickup rows (single or group) append a second line with the expiry
+   countdown from `ParcelUi.expiryText`. The row's base text, view and expiry
+   are kept in parallel lists so `updateCountdowns` can refresh only the
+   countdown line every second while the activity is resumed.
+6. In **simplified mode** the row text becomes `Parcel: <sender>` (see
+   `ParcelUi.simplifiedRowText`); multi-compartment groups get a
+   `MULTISKRYTKA <uuid-section>` header first. Rows get a border via
+   `Ui.applyBorderedRow`, dividers are skipped, and the status line is hidden
+   (errors re-show it).
 
 When there are no parcels it renders a single "No parcels found." row. Rows are
 `TextView`s with a 1 px `View` divider.
@@ -129,11 +141,21 @@ File: `app/src/com/openpostmobajl/ParcelDetailActivity.java`
 Shows one parcel. In `onCreate`:
 
 - Top bar: `← Back` + `Parcel <last6>`.
+- Top bar: `← Back` + `Parcel <last6>`; in simplified mode the title is
+  omitted.
 - QR block: rendered when `statusGroup` is `DELIVERED`, or the parcel is
   ready-to-pickup (`statusGroup` `TO_PICKUP` / `status` `READY_TO_PICKUP`),
-  **and** `qrCode` is non-empty. Tapping opens `QrFullscreenActivity`.
-- Summary: shipment number, status + status group, pickup point, sender.
-- Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`.
+  **and** `qrCode` is non-empty. Tapping opens `QrFullscreenActivity`. In
+  simplified mode the "QR code" label and the raw payload are hidden, leaving
+  only the image plus the "tap to open full screen" hint.
+- Summary: normally shipment number, status + status group, pickup point and
+  sender in one `TextView`; in **simplified mode** separate labeled blocks
+  (`addBlock`) for sender (first, below the QR code), pickup code
+  (`ParcelUi.pickupCode`), parcel number, translated status and pickup-point
+  details. When **Pickup point photo** is enabled, `PickupImageLoader` appends
+  the `pickUpPoint.imageUrl` image under that block (or nothing on failure).
+- Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
+  (hidden in simplified mode).
 
 Parses the `parcel` extra with `new JSONObject(...)`; malformed input shows
 "Could not read parcel data." instead of crashing.
@@ -149,7 +171,11 @@ in scan order) and `uuid`. In `onCreate`:
   (`MULTISKRYTKA <uuid-section>`).
 - One QR code taken from the **first** parcel in the array (`optJSONObject(0)`),
   rendered only if that parcel has a non-empty `qrCode`; tap opens
-  `QrFullscreenActivity`.
+  `QrFullscreenActivity`. In simplified mode the "QR code" label and the raw
+  payload are hidden and the "tap to open full screen" hint is shown instead.
+- Pickup-point block (`Ui.addBlock` with the same `ParcelUi.pickupDetails` data
+  as the parcel detail view) and, when the **Pickup point photo** setting is
+  on, the `PickupImageLoader` image — both between the QR code and the list.
 - A "N parcels" label.
 - Each contained parcel as a `ParcelUi.rowText` row; tapping opens
   `ParcelDetailActivity` with that parcel's JSON.
@@ -157,13 +183,30 @@ in scan order) and `uuid`. In `onCreate`:
 Grouping rules live in `ParcelUi` (see below), not here. This activity only
 renders whatever group it is given.
 
+### `SettingsActivity`
+
+File: `app/src/com/openpostmobajl/SettingsActivity.java`
+
+Top bar (`← Back` + title), a `Spinner` language picker built from
+`LocaleHelper.CODES`/`LABELS`, a backend `Spinner` (`auto`/`v4`/`global`) that
+reads and writes `AuthState.backendPreference` via `AuthStore`, a
+**Simplified mode** `CheckBox`, and a **Pickup point photo** `CheckBox` (off by
+default). Each has a short description. Selecting a language saves it via
+`LocaleHelper.setLanguage`; the checkboxes save via `AppSettings.setSimplified`
+and `AppSettings.setPickupImageEnabled`; the backend is saved to `auth.json`.
+Language and simplified mode call `recreate()` so the screen updates
+immediately; other activities recreate on `onResume` when either changed (and
+`MainActivity.onResume` picks up a changed backend). Extends `BaseActivity`.
+See [`LANGUAGES.md`](LANGUAGES.md).
+
 ### `DeliveredParcelsActivity`
 
 File: `app/src/com/openpostmobajl/DeliveredParcelsActivity.java`
 
 Reads `ParcelCache.load(this)` **synchronously on the UI thread** (no network),
-filters with `ParcelUi.sorted(res.parcels, true)`, and renders `rowText` rows
-that open `ParcelDetailActivity`. Shows "No delivered parcels." when empty.
+filters with `ParcelUi.sorted(res.parcels, true)` (which sorts delivered
+parcels by `storedDate`, newest first), and renders `rowText` rows that open
+`ParcelDetailActivity`. Shows "No delivered parcels." when empty.
 It does **not** group multi-compartment parcels.
 
 If you add heavier work here, move the cache load off the UI thread — the
@@ -204,8 +247,12 @@ view. Static, package-private, no state.
 | `multiCompartmentUuid(p)` | uuid when ready-to-pickup **and** `multiCompartment.presentation == true`, else `null` |
 | `multiCompartmentName(uuid)` | `MULTISKRYTKA <part before first '-'>` |
 | `grouped(sorted)` | collapses duplicate presentable uuids into `ParcelEntry` groups |
-| `sorted(parcels, deliveredOnly)` | filters delivered/undelivered, stable-sorts by `rank` |
+| `sorted(parcels, deliveredOnly)` | filters delivered/undelivered; non-delivered by `rank`, delivered by `storedDate` newest first (missing last) |
 | `rank(p)` | 0 ready-to-collect, 1 in transit, 2 to send, 3 delivered, 4 other |
+| `expiryMillis(p)` | epoch millis of `expiryDate` for a ready-to-pickup parcel, else `0` |
+| `storedMillis(p)` | epoch millis of `storedDate`, else `0` |
+| `parseIsoMillis(s)` | tolerant ISO-8601 parser (`Z` or `±HH:MM`, optional millis) |
+| `expiryText(millis)` | `Expires <local time> · in <Xd Yh…>` or `· expired` |
 
 `grouped` only groups a uuid seen on **more than one** parcel, preserves scan
 order, and makes the first member the group representative.
@@ -213,13 +260,41 @@ order, and makes the first member the group representative.
 ### `ParcelEntry` — `app/src/com/openpostmobajl/ParcelEntry.java`
 
 One list row: `first` (representative parcel), `parcels` (all members),
-`multiUuid` (`null` for a normal row), and `isMulti()`. Constructed via
+`multiUuid` (`null` for a normal row), `isMulti()`, and `expiryMillis()` (the
+earliest valid expiry among members, or `0`). Constructed via
 `ParcelEntry.single(parcel)` or `ParcelEntry.group(members, uuid)`.
 
 ### `QrCode` — `app/src/com/openpostmobajl/QrCode.java`
 
 `QrCode.generate(content, size)` builds an ARGB bitmap with ZXing core, UTF-8
 and margin 2. Returns `null` on failure; callers must null-check.
+
+### `BaseActivity` / `AppSettings` / `LocaleHelper`
+
+`BaseActivity` (`app/src/com/openpostmobajl/BaseActivity.java`) is the base for
+every activity. In `attachBaseContext` it calls `AppSettings.wrap`, which
+applies the selected language and (in simplified mode) a larger font scale, and
+it recreates the activity in `onResume` if the language or simplified mode
+changed while it was in the back stack. `AppSettings` stores `simplified_mode`
+and `LocaleHelper` stores the language, both in the same `SharedPreferences`
+file. See [`LANGUAGES.md`](LANGUAGES.md).
+
+### `PickupImageLoader` — `app/src/com/openpostmobajl/PickupImageLoader.java`
+
+Best-effort pickup-point image loader. `loadInto(activity, parent, url)` adds a
+**hidden** `ImageView` to `parent` immediately (so it stays in the caller's
+pickup-point section instead of being appended later), then fetches off the main
+thread, caches the bytes in `getCacheDir()` (`pickup_<sha256>.img`) for 24 h, and
+reveals the view only after a bitmap decodes successfully. Missing URL, non-2xx
+response, oversized payload and decode errors are all silent. Used by
+`ParcelDetailActivity` and `MultiCompartmentActivity` when the setting is on.
+
+### `Ui` — `app/src/com/openpostmobajl/Ui.java`
+
+Small view helpers for the list/detail screens: `Ui.dp`, `Ui.borderedRow` and
+`Ui.applyBorderedRow` (padding + rounded border + bottom gap) used for the
+simplified-mode list rows, and `Ui.addBlock` (small gray label + value) used by
+`ParcelDetailActivity` and `MultiCompartmentActivity`.
 
 ---
 
@@ -243,6 +318,13 @@ and margin 2. Returns `null` on failure; callers must null-check.
 - **Config changes.** Activities declare `configChanges` for
   orientation/screen-size/keyboard, so `onCreate` is not re-run on rotation and
   there is no re-render path. Rebuild state in `onCreate` only.
+- **Live updates.** The only periodic UI update is the expiry countdown in
+  `MainActivity` (a `Handler` posting every 1 s). Start/stop it with
+  `onResume`/`onPause`; never leave timers running in the background.
+- **Localization.** Extend `BaseActivity` and use `getString(R.string…)` for
+  every user-facing string — never hard-code UI text. Resources live in
+  `app/res/values/` (English) and `app/res/values-pl/` (Polish); see
+  [`LANGUAGES.md`](LANGUAGES.md).
 - **Defensive parsing.** Views are built from JSON that may be missing fields;
   use `optString`/`optJSONObject`/`optBoolean` and null-check before use.
 
@@ -251,7 +333,7 @@ and margin 2. Returns `null` on failure; callers must null-check.
 ## Adding a new view
 
 1. Create `app/src/com/openpostmobajl/XxxActivity.java` extending
-   `android.app.Activity`.
+   `BaseActivity` (so it is translated and reacts to language changes).
 2. Build the UI in `onCreate` (root `LinearLayout`, optional `ScrollView`,
    `setContentView`). Add a private `dp()` helper and follow the top-bar
    pattern above.
@@ -287,13 +369,15 @@ and margin 2. Returns `null` on failure; callers must null-check.
 | list ordering | `ParcelUi.rank` |
 | single-row text | `ParcelUi.rowText` |
 | multi-compartment grouping or name | `ParcelUi.grouped` / `multiCompartmentUuid` / `multiCompartmentName` / `multiCompartmentRowText` |
+| expiry countdown format or parsing | `ParcelUi.expiryMillis` / `parseIsoMillis` / `expiryText` |
+| countdown refresh / lifecycle | `MainActivity` `countdownTick` / `updateCountdowns` / `onResume` / `onPause` |
 | what a detail screen shows | `ParcelDetailActivity.onCreate` |
 | what a group screen shows | `MultiCompartmentActivity.onCreate` |
 | when a QR is shown | `ParcelDetailActivity` / `MultiCompartmentActivity` QR blocks |
 | delivered list contents | `DeliveredParcelsActivity.onCreate` |
 | sidebar entries | `MainActivity.buildPanel` |
 | list rendering / navigation | `MainActivity.render` |
-| app version | `app/AndroidManifest.xml` + `VERSION_CODE`/`VERSION_NAME` in both build scripts (currently 1.1 / 2) |
+| app version | `app/AndroidManifest.xml` + `VERSION_CODE`/`VERSION_NAME` in both build scripts (currently 1.2 / 3) |
 | theme of a screen | its `<activity>` in `app/AndroidManifest.xml` |
 
 ---
@@ -307,6 +391,8 @@ and margin 2. Returns `null` on failure; callers must null-check.
   They appear only in `DeliveredParcelsActivity`, which reads the cache.
 - **Grouping is main-list only** and ready-to-pickup only. Delivered and
   in-transit parcels are never grouped.
+- **`expiryDate` is optional.** Only ready-to-pickup entries with a valid date
+  get a countdown; a missing or unparseable date is silently ignored.
 - **QR payloads never come from the network bitmap**; only the `qrCode` string
   is used and the image is generated locally.
 - **Intent extra names are part of the contract** between screens:
