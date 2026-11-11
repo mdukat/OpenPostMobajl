@@ -88,13 +88,15 @@ public class MultiCompartmentActivity extends BaseActivity {
             if (qr.length() > 0) {
                 Bitmap bmp = QrCode.generate(qr, 600);
                 if (bmp != null) {
-                    TextView qrLabel = new TextView(this);
-                    qrLabel.setText(R.string.common_qr_code);
-                    qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-                    qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
-                    content.addView(qrLabel, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (!simplified) {
+                        TextView qrLabel = new TextView(this);
+                        qrLabel.setText(R.string.common_qr_code);
+                        qrLabel.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+                        qrLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+                        content.addView(qrLabel, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
 
                     ImageView qrView = new ImageView(this);
                     qrView.setImageBitmap(bmp);
@@ -116,15 +118,27 @@ public class MultiCompartmentActivity extends BaseActivity {
                     qrLp.bottomMargin = dp(8);
                     content.addView(qrView, qrLp);
 
-                    TextView qrText = new TextView(this);
-                    qrText.setText(qr);
-                    qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
-                    qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
-                    qrText.setTypeface(android.graphics.Typeface.MONOSPACE);
-                    qrText.setTextIsSelectable(true);
-                    content.addView(qrText, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT));
+                    if (simplified) {
+                        TextView qrHint = new TextView(this);
+                        qrHint.setText(R.string.detail_qr_hint);
+                        qrHint.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrHint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                        qrHint.setGravity(Gravity.CENTER_HORIZONTAL);
+                        qrHint.setPadding(0, 0, 0, dp(8));
+                        content.addView(qrHint, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    } else {
+                        TextView qrText = new TextView(this);
+                        qrText.setText(qr);
+                        qrText.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+                        qrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
+                        qrText.setTypeface(android.graphics.Typeface.MONOSPACE);
+                        qrText.setTextIsSelectable(true);
+                        content.addView(qrText, new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
                 }
             }
         }

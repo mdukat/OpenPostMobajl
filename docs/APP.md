@@ -155,8 +155,9 @@ checkbox in **Settings** (on by default). When enabled it:
 - translates the status, e.g. `TAKEN_BY_COURIER (IN_TRANSIT)` →
   `Taken by courier - parcel in transit` (and the Polish equivalent) via
   `ParcelUi.statusText`;
-- hides the top **Parcel `<number>`** title, the **QR code** label and the raw
-  QR payload; keeps the QR image with a "tap to open full screen" hint;
+- hides the top **Parcel `<number>`** title (parcel detail) and the **QR code**
+  label and raw QR payload (parcel detail and MULTISKRYTKA group view); keeps
+  the QR image with a "tap to open full screen" hint;
 - splits the detail screen into separate labeled blocks — **Sender** first
   (right below the QR code), then **Pickup code** (`openCode`, falling back to
   the last segment of the QR payload), **Parcel number**, translated **Status**

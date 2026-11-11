@@ -170,7 +170,8 @@ in scan order) and `uuid`. In `onCreate`:
   (`MULTISKRYTKA <uuid-section>`).
 - One QR code taken from the **first** parcel in the array (`optJSONObject(0)`),
   rendered only if that parcel has a non-empty `qrCode`; tap opens
-  `QrFullscreenActivity`.
+  `QrFullscreenActivity`. In simplified mode the "QR code" label and the raw
+  payload are hidden and the "tap to open full screen" hint is shown instead.
 - A "N parcels" label.
 - Each contained parcel as a `ParcelUi.rowText` row; tapping opens
   `ParcelDetailActivity` with that parcel's JSON.
