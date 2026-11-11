@@ -92,6 +92,18 @@ final class ParcelUi {
     }
 
     /**
+     * Simplified list row for a {@link ParcelEntry}. Multi-compartment groups
+     * get a "MULTISKRYTKA ..." header so they are not mistaken for one parcel.
+     */
+    static String simplifiedRowText(Context ctx, ParcelEntry entry) {
+        String body = simplifiedRowText(ctx, entry.first);
+        if (entry.isMulti()) {
+            return multiCompartmentName(ctx, entry.multiUuid) + "\n" + body;
+        }
+        return body;
+    }
+
+    /**
      * Human status for simplified mode, e.g.
      * {@code "Taken by courier - parcel in transit"}. Unknown codes are
      * prettified ({@code SOME_CODE} -&gt; {@code Some code}).

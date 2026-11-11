@@ -149,7 +149,9 @@ checkbox in **Settings** (on by default). When enabled it:
   button next to it in the top bar (both a little larger, for easier tapping);
 - shows every list row as `Parcel: <sender name>` followed by the translated
   status, with a visible border instead of the compact
-  `last6 · status · point · sender` line and dividers;
+  `last6 · status · point · sender` line and dividers; MULTISKRYTKA groups add
+  a `MULTISKRYTKA <uuid-section>` header so they are not mistaken for a single
+  parcel;
 - translates the status, e.g. `TAKEN_BY_COURIER (IN_TRANSIT)` →
   `Taken by courier - parcel in transit` (and the Polish equivalent) via
   `ParcelUi.statusText`;

@@ -529,7 +529,7 @@ public class MainActivity extends BaseActivity {
         for (int i = 0; i < items.size(); i++) {
             final ParcelEntry entry = items.get(i);
             String base = simplified
-                    ? ParcelUi.simplifiedRowText(this, entry.first)
+                    ? ParcelUi.simplifiedRowText(this, entry)
                     : (entry.isMulti()
                     ? ParcelUi.multiCompartmentRowText(this, entry)
                     : ParcelUi.rowText(entry.first));

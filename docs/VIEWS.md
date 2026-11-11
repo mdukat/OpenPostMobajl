@@ -126,7 +126,8 @@ mode a weighted spacer pushes **Settings** and **Licenses** to the bottom.
    are kept in parallel lists so `updateCountdowns` can refresh only the
    countdown line every second while the activity is resumed.
 6. In **simplified mode** the row text becomes `Parcel: <sender>` (see
-   `ParcelUi.simplifiedRowText`), rows get a border via
+   `ParcelUi.simplifiedRowText`); multi-compartment groups get a
+   `MULTISKRYTKA <uuid-section>` header first. Rows get a border via
    `Ui.applyBorderedRow`, dividers are skipped, and the status line is hidden
    (errors re-show it).
 
