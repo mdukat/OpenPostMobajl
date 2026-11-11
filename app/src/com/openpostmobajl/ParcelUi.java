@@ -123,16 +123,71 @@ final class ParcelUi {
             return 0;
         }
         switch (code.toUpperCase(Locale.US)) {
-            case "CONFIRMED": return R.string.status_confirmed;
-            case "DISPATCHED_BY_SENDER": return R.string.status_dispatched_by_sender;
-            case "TAKEN_BY_COURIER": return R.string.status_taken_by_courier;
-            case "READY_TO_PICKUP": return R.string.status_ready_to_pickup;
+            case "ADOPTED_AT_SORTING_CENTER": return R.string.status_adopted_at_sorting_center;
+            case "ADOPTED_AT_SOURCE_BRANCH": return R.string.status_adopted_at_source_branch;
+            case "ADOPTED_AT_TARGET_BRANCH": return R.string.status_adopted_at_target_branch;
+            case "AVIZO": return R.string.status_avizo;
+            case "AVIZO_COMPLETED": return R.string.status_avizo_completed;
+            case "AVIZO_REJECTED": return R.string.status_avizo_rejected;
             case "AWAITING_COLLECTION": return R.string.status_awaiting_collection;
-            case "READY_TO_COLLECT": return R.string.status_ready_to_collect;
-            case "OUT_FOR_DELIVERY": return R.string.status_out_for_delivery;
-            case "DELIVERED": return R.string.status_delivered;
-            case "UNDELIVERED": return R.string.status_undelivered;
+            case "C2X_COMPLETED": return R.string.status_c2x_completed;
+            case "C2X_REJECTED": return R.string.status_c2x_rejected;
+            case "CANCELED": return R.string.status_canceled;
+            case "CANCELED_REDIRECT_TO_BOX": return R.string.status_canceled_redirect_to_box;
             case "CLAIMED": return R.string.status_claimed;
+            case "COD_COMPLETED": return R.string.status_cod_completed;
+            case "COD_REJECTED": return R.string.status_cod_rejected;
+            case "COLLECTED_BY_CUSTOMER": return R.string.status_collected_by_customer;
+            case "COLLECTED_FROM_SENDER": return R.string.status_collected_from_sender;
+            case "CONFIRMED": return R.string.status_confirmed;
+            case "CREATED": return R.string.status_created;
+            case "DELAY_IN_DELIVERY": return R.string.status_delay_in_delivery;
+            case "DELIVERED": return R.string.status_delivered;
+            case "DELIVERY_ATTEMPT_FAILED": return R.string.status_delivery_attempt_failed;
+            case "DISPATCHED_BY_SENDER": return R.string.status_dispatched_by_sender;
+            case "DISPATCHED_BY_SENDER_TO_POK": return R.string.status_dispatched_by_sender_to_pok;
+            case "MISSING": return R.string.status_missing;
+            case "NOT_COLLECTED": return R.string.status_not_collected;
+            case "OFFERS_PREPARED": return R.string.status_offers_prepared;
+            case "OFFER_SELECTED": return R.string.status_offer_selected;
+            case "OTHER": return R.string.status_other;
+            case "OUT_FOR_DELIVERY": return R.string.status_out_for_delivery;
+            case "OUT_FOR_DELIVERY_TO_ADDRESS": return R.string.status_out_for_delivery_to_address;
+            case "OVERSIZED": return R.string.status_oversized;
+            case "PERMANENTLY_REDIRECTED_TO_BOX_MACHINE": return R.string.status_permanently_redirected_to_box_machine;
+            case "PERMANENTLY_REDIRECTED_TO_CUSTOMER_SERVICE_POINT": return R.string.status_permanently_redirected_to_customer_service_point;
+            case "PICKUP_REMINDER_SENT": return R.string.status_pickup_reminder_sent;
+            case "PICKUP_REMINDER_SENT_ADDRESS": return R.string.status_pickup_reminder_sent_address;
+            case "PICKUP_TIME_EXPIRED": return R.string.status_pickup_time_expired;
+            case "READDRESSED": return R.string.status_readdressed;
+            case "READY_FOR_COLLECTION": return R.string.status_ready_for_collection;
+            case "READY_TO_COLLECT": return R.string.status_ready_to_collect;
+            case "READY_TO_PICKUP": return R.string.status_ready_to_pickup;
+            case "READY_TO_PICKUP_FROM_BRANCH": return R.string.status_ready_to_pickup_from_branch;
+            case "READY_TO_PICKUP_FROM_POK": return R.string.status_ready_to_pickup_from_pok;
+            case "READY_TO_PICKUP_FROM_POK_REGISTERED": return R.string.status_ready_to_pickup_from_pok_registered;
+            case "REDIRECT_TO_BOX": return R.string.status_redirect_to_box;
+            case "REJECTED_BY_RECEIVER": return R.string.status_rejected_by_receiver;
+            case "RETURNED_TO_SENDER": return R.string.status_returned_to_sender;
+            case "RETURN_PICKUP_CONFIRMATION_TO_SENDER": return R.string.status_return_pickup_confirmation_to_sender;
+            case "SENT_FROM_SORTING_CENTER": return R.string.status_sent_from_sorting_center;
+            case "SENT_FROM_SOURCE_BRANCH": return R.string.status_sent_from_source_branch;
+            case "STACK_IN_BOX_MACHINE": return R.string.status_stack_in_box_machine;
+            case "STACK_IN_CUSTOMER_SERVICE_POINT": return R.string.status_stack_in_customer_service_point;
+            case "STACK_PARCEL_IN_BOX_MACHINE_PICKUP_TIME_EXPIRED": return R.string.status_stack_parcel_in_box_machine_pickup_time_expired;
+            case "STACK_PARCEL_PICKUP_TIME_EXPIRED": return R.string.status_stack_parcel_pickup_time_expired;
+            case "TAKEN_BY_COURIER": return R.string.status_taken_by_courier;
+            case "TAKEN_BY_COURIER_FROM_POK": return R.string.status_taken_by_courier_from_pok;
+            case "UNDELIVERED": return R.string.status_undelivered;
+            case "UNDELIVERED_COD_CASH_RECEIVER": return R.string.status_undelivered_cod_cash_receiver;
+            case "UNDELIVERED_INCOMPLETE_ADDRESS": return R.string.status_undelivered_incomplete_address;
+            case "UNDELIVERED_LACK_OF_ACCESS_LETTERBOX": return R.string.status_undelivered_lack_of_access_letterbox;
+            case "UNDELIVERED_NOT_LIVE_ADDRESS": return R.string.status_undelivered_not_live_address;
+            case "UNDELIVERED_NO_MAILBOX": return R.string.status_undelivered_no_mailbox;
+            case "UNDELIVERED_UNKNOWN_RECEIVER": return R.string.status_undelivered_unknown_receiver;
+            case "UNDELIVERED_WRONG_ADDRESS": return R.string.status_undelivered_wrong_address;
+            case "UNSTACK_FROM_BOX_MACHINE": return R.string.status_unstack_from_box_machine;
+            case "UNSTACK_FROM_CUSTOMER_SERVICE_POINT": return R.string.status_unstack_from_customer_service_point;
             default: return 0;
         }
     }
@@ -161,6 +216,8 @@ final class ParcelUi {
                 return R.string.status_group_undelivered;
             case "CLAIMED":
                 return R.string.status_group_claimed;
+            case "OTHER":
+                return R.string.status_group_other;
             default: return 0;
         }
     }

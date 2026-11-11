@@ -158,6 +158,6 @@ Keys are grouped by screen in the resource files:
 | `expires_*` | expiry countdown (`ParcelUi.expiryText`) |
 | `delivered_*` | `DeliveredParcelsActivity` |
 | `licenses_*` | `LicensesActivity` |
-| `status_*` | translated package statuses/groups for simplified mode |
+| `status_*` | package statuses/groups for simplified mode (full InPost status catalogue) |
 | `settings_*` | `SettingsActivity` |
 | `backend_*` | backend picker labels (`auto`/`v4`/`global`) |
