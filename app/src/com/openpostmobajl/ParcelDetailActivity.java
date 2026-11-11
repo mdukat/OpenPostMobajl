@@ -159,6 +159,9 @@ public class ParcelDetailActivity extends BaseActivity {
                         ParcelUi.statusText(this, status, group));
                 addBlock(content, R.string.detail_label_pickup_point,
                         pickup.length() == 0 ? ParcelUi.pointName(parcel) : pickup);
+                if (AppSettings.isPickupImageEnabled(this)) {
+                    PickupImageLoader.loadInto(this, content, ParcelUi.pickupImageUrl(parcel));
+                }
             } else {
                 TextView summary = new TextView(this);
                 summary.setTextColor(Color.rgb(0x11, 0x11, 0x11));

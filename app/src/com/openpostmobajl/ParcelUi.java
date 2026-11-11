@@ -242,6 +242,15 @@ final class ParcelUi {
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
+    /** {@code pickUpPoint.imageUrl} (or {@code pickUp.imageUrl}), or {@code ""}. */
+    static String pickupImageUrl(JSONObject p) {
+        JSONObject o = p.optJSONObject("pickUpPoint");
+        if (o == null) {
+            o = p.optJSONObject("pickUp");
+        }
+        return o == null ? "" : o.optString("imageUrl", "");
+    }
+
     /**
      * Multi-line pickup point for simplified mode: name, location description,
      * opening hours and the address. Empty lines are skipped.

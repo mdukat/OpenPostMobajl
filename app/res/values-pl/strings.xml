@@ -153,4 +153,6 @@
     <string name="backend_global">Globalny</string>
     <string name="settings_simplified">Tryb uproszczony</string>
     <string name="settings_simplified_description">Większy tekst, czytelniejsze przyciski i prosta lista paczek. Zalecane dla starszych użytkowników.</string>
+    <string name="settings_pickup_image">Zdjęcie punktu odbioru</string>
+    <string name="settings_pickup_image_description">Pobierz i pokaż zdjęcie punktu odbioru. Buforowane przez 24 godziny. Domyślnie wyłączone.</string>
 </resources>

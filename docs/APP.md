@@ -166,6 +166,11 @@ checkbox in **Settings** (on by default). When enabled it:
 - hides the raw JSON block on the parcel detail screen;
 - scales all text up (font scale ×1.3, on top of the system setting).
 
+Separately, **Settings → Pickup point photo** (off by default) makes the parcel
+detail view download `pickUpPoint.imageUrl`, cache it for 24 hours and show it
+under the **Pickup point** block. It is best-effort: a missing URL or a failed
+download shows nothing (no broken image, no error).
+
 The flag is stored in `SharedPreferences` (`openpostmobajl_settings`,
 `simplified_mode`). It is applied together with the language by
 `AppSettings.wrap` in `BaseActivity.attachBaseContext`, so it affects the whole

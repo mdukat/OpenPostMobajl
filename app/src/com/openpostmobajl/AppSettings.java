@@ -15,6 +15,7 @@ final class AppSettings {
 
     private static final String PREFS = "openpostmobajl_settings";
     private static final String KEY_SIMPLIFIED = "simplified_mode";
+    private static final String KEY_PICKUP_IMAGE = "pickup_point_image";
 
     /** Extra font scale applied in simplified mode (relative to the system). */
     private static final float SIMPLIFIED_FONT_SCALE = 1.3f;
@@ -29,6 +30,15 @@ final class AppSettings {
 
     static void setSimplified(Context ctx, boolean enabled) {
         prefs(ctx).edit().putBoolean(KEY_SIMPLIFIED, enabled).apply();
+    }
+
+    /** Pickup-point photo download is OFF by default. */
+    static boolean isPickupImageEnabled(Context ctx) {
+        return prefs(ctx).getBoolean(KEY_PICKUP_IMAGE, false);
+    }
+
+    static void setPickupImageEnabled(Context ctx, boolean enabled) {
+        prefs(ctx).edit().putBoolean(KEY_PICKUP_IMAGE, enabled).apply();
     }
 
     /**

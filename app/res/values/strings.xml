@@ -150,4 +150,6 @@
     <string name="backend_global">Global</string>
     <string name="settings_simplified">Simplified mode</string>
     <string name="settings_simplified_description">Larger text, clearer buttons and a simple parcel list. Recommended for older users.</string>
+    <string name="settings_pickup_image">Pickup point photo</string>
+    <string name="settings_pickup_image_description">Download and show the pickup point photo. Cached for 24 hours. Off by default.</string>
 </resources>

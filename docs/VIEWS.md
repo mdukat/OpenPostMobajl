@@ -152,7 +152,8 @@ Shows one parcel. In `onCreate`:
   sender in one `TextView`; in **simplified mode** separate labeled blocks
   (`addBlock`) for sender (first, below the QR code), pickup code
   (`ParcelUi.pickupCode`), parcel number, translated status and pickup-point
-  details.
+  details. When **Pickup point photo** is enabled, `PickupImageLoader` appends
+  the `pickUpPoint.imageUrl` image under that block (or nothing on failure).
 - Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
   (hidden in simplified mode).
 
@@ -185,10 +186,11 @@ File: `app/src/com/openpostmobajl/SettingsActivity.java`
 
 Top bar (`← Back` + title), a `Spinner` language picker built from
 `LocaleHelper.CODES`/`LABELS`, a backend `Spinner` (`auto`/`v4`/`global`) that
-reads and writes `AuthState.backendPreference` via `AuthStore`, and a
-**Simplified mode** `CheckBox`. Each has a short description. Selecting a
-language saves it via `LocaleHelper.setLanguage`; toggling the checkbox saves
-it via `AppSettings.setSimplified`; the backend is saved to `auth.json`.
+reads and writes `AuthState.backendPreference` via `AuthStore`, a
+**Simplified mode** `CheckBox`, and a **Pickup point photo** `CheckBox` (off by
+default). Each has a short description. Selecting a language saves it via
+`LocaleHelper.setLanguage`; the checkboxes save via `AppSettings.setSimplified`
+and `AppSettings.setPickupImageEnabled`; the backend is saved to `auth.json`.
 Language and simplified mode call `recreate()` so the screen updates
 immediately; other activities recreate on `onResume` when either changed (and
 `MainActivity.onResume` picks up a changed backend). Extends `BaseActivity`.
@@ -273,6 +275,14 @@ it recreates the activity in `onResume` if the language or simplified mode
 changed while it was in the back stack. `AppSettings` stores `simplified_mode`
 and `LocaleHelper` stores the language, both in the same `SharedPreferences`
 file. See [`LANGUAGES.md`](LANGUAGES.md).
+
+### `PickupImageLoader` — `app/src/com/openpostmobajl/PickupImageLoader.java`
+
+Best-effort pickup-point image loader. `loadInto(activity, parent, url)` fetches
+off the main thread, caches the bytes in `getCacheDir()` (`pickup_<sha256>.img`)
+for 24 h, and appends an `ImageView` to `parent` **only** after a bitmap decodes
+successfully. Missing URL, non-2xx response, oversized payload and decode errors
+are all silent. Used by `ParcelDetailActivity` when the setting is on.
 
 ### `Ui` — `app/src/com/openpostmobajl/Ui.java`
 

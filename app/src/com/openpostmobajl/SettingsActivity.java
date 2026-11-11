@@ -210,6 +210,30 @@ public class SettingsActivity extends BaseActivity {
         content.addView(simplifiedDescription, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        // ---- pickup point photo ----
+        final CheckBox pickupImage = new CheckBox(this);
+        pickupImage.setText(R.string.settings_pickup_image);
+        pickupImage.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+        pickupImage.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+        pickupImage.setChecked(AppSettings.isPickupImageEnabled(this));
+        pickupImage.setPadding(0, dp(16), 0, dp(4));
+        pickupImage.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(android.widget.CompoundButton buttonView, boolean isChecked) {
+                AppSettings.setPickupImageEnabled(SettingsActivity.this, isChecked);
+            }
+        });
+        content.addView(pickupImage, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView pickupImageDescription = new TextView(this);
+        pickupImageDescription.setText(R.string.settings_pickup_image_description);
+        pickupImageDescription.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+        pickupImageDescription.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+        pickupImageDescription.setPadding(0, 0, 0, dp(8));
+        content.addView(pickupImageDescription, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
         root.addView(scroll, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(root);
