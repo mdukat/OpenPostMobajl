@@ -143,6 +143,20 @@ public class MultiCompartmentActivity extends BaseActivity {
             }
         }
 
+        // ---- pickup point (same data as the parcel detail view) ----
+        if (first != null) {
+            String pickup = ParcelUi.pickupDetails(first);
+            if (pickup.length() == 0) {
+                pickup = ParcelUi.pointName(first);
+            }
+            if (pickup.length() > 0) {
+                Ui.addBlock(this, content, R.string.detail_label_pickup_point, pickup);
+            }
+            if (AppSettings.isPickupImageEnabled(this)) {
+                PickupImageLoader.loadInto(this, content, ParcelUi.pickupImageUrl(first));
+            }
+        }
+
         // ---- contained parcels ----
         TextView section = new TextView(this);
         section.setText(getResources().getQuantityString(

@@ -27,6 +27,24 @@ final class Ui {
         return d;
     }
 
+    /** A small gray label followed by a value; used by the detail screens. */
+    static void addBlock(Context ctx, LinearLayout parent, int labelRes, String value) {
+        TextView label = new TextView(ctx);
+        label.setText(labelRes);
+        label.setTextColor(Color.rgb(0x55, 0x55, 0x55));
+        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
+        label.setPadding(0, dp(ctx, 12), 0, 0);
+        parent.addView(label, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        TextView text = new TextView(ctx);
+        text.setText(value);
+        text.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+        parent.addView(text, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+    }
+
     /** Applies the bordered-row style: padding, border and a small bottom gap. */
     static void applyBorderedRow(Context ctx, TextView tv) {
         tv.setPadding(dp(ctx, 12), dp(ctx, 12), dp(ctx, 12), dp(ctx, 12));

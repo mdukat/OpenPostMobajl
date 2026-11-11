@@ -149,15 +149,15 @@ public class ParcelDetailActivity extends BaseActivity {
             if (simplified) {
                 // Separate, labeled blocks are easier to read than one big block.
                 // Sender first, right below the QR code.
-                addBlock(content, R.string.detail_label_sender, ParcelUi.senderName(parcel));
+                Ui.addBlock(this, content, R.string.detail_label_sender, ParcelUi.senderName(parcel));
                 String pickupCode = ParcelUi.pickupCode(parcel);
                 if (pickupCode.length() > 0) {
-                    addBlock(content, R.string.detail_label_pickup_code, pickupCode);
+                    Ui.addBlock(this, content, R.string.detail_label_pickup_code, pickupCode);
                 }
-                addBlock(content, R.string.detail_label_number, number);
-                addBlock(content, R.string.detail_label_status,
+                Ui.addBlock(this, content, R.string.detail_label_number, number);
+                Ui.addBlock(this, content, R.string.detail_label_status,
                         ParcelUi.statusText(this, status, group));
-                addBlock(content, R.string.detail_label_pickup_point,
+                Ui.addBlock(this, content, R.string.detail_label_pickup_point,
                         pickup.length() == 0 ? ParcelUi.pointName(parcel) : pickup);
                 if (AppSettings.isPickupImageEnabled(this)) {
                     PickupImageLoader.loadInto(this, content, ParcelUi.pickupImageUrl(parcel));
@@ -208,24 +208,6 @@ public class ParcelDetailActivity extends BaseActivity {
         root.addView(scroll, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(root);
-    }
-
-    /** A small gray label followed by the value; used by the simplified view. */
-    private void addBlock(LinearLayout parent, int labelRes, String value) {
-        TextView label = new TextView(this);
-        label.setText(labelRes);
-        label.setTextColor(Color.rgb(0x55, 0x55, 0x55));
-        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-        label.setPadding(0, dp(12), 0, 0);
-        parent.addView(label, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        TextView text = new TextView(this);
-        text.setText(value);
-        text.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
-        parent.addView(text, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     private int dp(int value) {

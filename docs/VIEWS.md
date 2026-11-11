@@ -173,6 +173,9 @@ in scan order) and `uuid`. In `onCreate`:
   rendered only if that parcel has a non-empty `qrCode`; tap opens
   `QrFullscreenActivity`. In simplified mode the "QR code" label and the raw
   payload are hidden and the "tap to open full screen" hint is shown instead.
+- Pickup-point block (`Ui.addBlock` with the same `ParcelUi.pickupDetails` data
+  as the parcel detail view) and, when the **Pickup point photo** setting is
+  on, the `PickupImageLoader` image — both between the QR code and the list.
 - A "N parcels" label.
 - Each contained parcel as a `ParcelUi.rowText` row; tapping opens
   `ParcelDetailActivity` with that parcel's JSON.
@@ -278,17 +281,20 @@ file. See [`LANGUAGES.md`](LANGUAGES.md).
 
 ### `PickupImageLoader` — `app/src/com/openpostmobajl/PickupImageLoader.java`
 
-Best-effort pickup-point image loader. `loadInto(activity, parent, url)` fetches
-off the main thread, caches the bytes in `getCacheDir()` (`pickup_<sha256>.img`)
-for 24 h, and appends an `ImageView` to `parent` **only** after a bitmap decodes
-successfully. Missing URL, non-2xx response, oversized payload and decode errors
-are all silent. Used by `ParcelDetailActivity` when the setting is on.
+Best-effort pickup-point image loader. `loadInto(activity, parent, url)` adds a
+**hidden** `ImageView` to `parent` immediately (so it stays in the caller's
+pickup-point section instead of being appended later), then fetches off the main
+thread, caches the bytes in `getCacheDir()` (`pickup_<sha256>.img`) for 24 h, and
+reveals the view only after a bitmap decodes successfully. Missing URL, non-2xx
+response, oversized payload and decode errors are all silent. Used by
+`ParcelDetailActivity` and `MultiCompartmentActivity` when the setting is on.
 
 ### `Ui` — `app/src/com/openpostmobajl/Ui.java`
 
-Small view helpers for the list screens: `Ui.dp`, `Ui.borderedRow` and
+Small view helpers for the list/detail screens: `Ui.dp`, `Ui.borderedRow` and
 `Ui.applyBorderedRow` (padding + rounded border + bottom gap) used for the
-simplified-mode list rows.
+simplified-mode list rows, and `Ui.addBlock` (small gray label + value) used by
+`ParcelDetailActivity` and `MultiCompartmentActivity`.
 
 ---
 

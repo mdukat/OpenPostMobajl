@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -20,6 +21,7 @@ import java.security.MessageDigest;
 /**
  * Best-effort pickup-point image loader: downloads the image once, caches it on
  * disk for 24 hours, and appends an {@link ImageView} to the given container
+ * immediately (hidden, so it stays in the caller's section) and reveals it
  * only after a bitmap was decoded successfully.
  *
  * Any failure (missing URL, network error, non-image response, decode error) is
@@ -43,6 +45,17 @@ final class PickupImageLoader {
         if (url == null || url.length() == 0) {
             return;
         }
+        // Add the (hidden) view synchronously so it stays right where the caller
+        // put it, inside the pickup-point section; reveal it only on success.
+        final ImageView image = new ImageView(activity);
+        image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        image.setBackgroundColor(Color.WHITE);
+        image.setVisibility(View.GONE);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(activity, IMAGE_HEIGHT_DP));
+        lp.topMargin = dp(activity, 8);
+        parent.addView(image, lp);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -56,14 +69,8 @@ final class PickupImageLoader {
                         if (activity.isFinishing() || activity.isDestroyed()) {
                             return;
                         }
-                        ImageView image = new ImageView(activity);
                         image.setImageBitmap(bmp);
-                        image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                        image.setBackgroundColor(Color.WHITE);
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT, dp(activity, IMAGE_HEIGHT_DP));
-                        lp.topMargin = dp(activity, 8);
-                        parent.addView(image, lp);
+                        image.setVisibility(View.VISIBLE);
                     }
                 });
             }
