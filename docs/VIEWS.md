@@ -196,9 +196,13 @@ in scan order) and `uuid`. In `onCreate`:
   rendered only if that parcel has a non-empty `qrCode`; tap opens
   `QrFullscreenActivity`. In simplified mode the "QR code" label and the raw
   payload are hidden and the "tap to open full screen" hint is shown instead.
+- **Time left to pickup** block (`Ui.addBlock`, earliest `expiryDate` among the
+  members) and, when a member offers avizo (`ParcelUi.canExtendAvizo`), the
+  short **Extend pickup** button directly under it — between the QR code and
+  the pickup-point block.
 - Pickup-point block (`Ui.addBlock` with the same `ParcelUi.pickupDetails` data
   as the parcel detail view) and, when the **Pickup point photo** setting is
-  on, the `PickupImageLoader` image — both between the QR code and the list.
+  on, the `PickupImageLoader` image — between the time-left block and the list.
 - A "N parcels" label.
 - Each contained parcel as a `ParcelUi.rowText` row; tapping opens
   `ParcelDetailActivity` with that parcel's JSON.

@@ -136,6 +136,10 @@ When the backend marks a parcel with `operations.expandAvizo = true` and its
 parcel detail view shows a short **Extend pickup** button (no question text) —
 in simplified mode directly under the time-left block, in normal mode before
 the JSON.
+The **MULTISKRYTKA** group view (`MultiCompartmentActivity`) shows the same
+**Time left to pickup** block (earliest `expiryDate` among its members) and
+**Extend pickup** button between the QR code and the pickup-point block.
+
 It opens `AvizoActivity`, which follows the same flow as the official app
 (validated against InPost Mobile 4.22.1):
 
