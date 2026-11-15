@@ -4,6 +4,7 @@ import android.os.Build;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -128,6 +129,11 @@ final class ApiClient {
     }
 
     static JSONObject getJson(String endpoint, Map<String, String> headers) throws Exception {
+        return readJson(openGet(endpoint, headers));
+    }
+
+    private static HttpURLConnection openGet(String endpoint, Map<String, String> headers)
+            throws Exception {
         HttpURLConnection c = open(endpoint, "GET");
         c.setRequestProperty("Accept", "application/json");
         c.setRequestProperty("User-Agent", userAgent());
@@ -136,6 +142,34 @@ final class ApiClient {
                 c.setRequestProperty(e.getKey(), e.getValue());
             }
         }
+        return c;
+    }
+
+    private static Object readJsonAny(HttpURLConnection c) throws Exception {
+        int code = c.getResponseCode();
+        InputStream in = (code >= 200 && code < 300) ? c.getInputStream() : c.getErrorStream();
+        String body = readAll(in);
+        if (code < 200 || code >= 300) {
+            throw new ApiException(code, body);
+        }
+        return new JSONTokener(body).nextValue();
+    }
+
+    private static JSONObject postJson(String endpoint, Map<String, String> headers,
+            JSONObject body) throws Exception {
+        HttpURLConnection c = open(endpoint, "POST");
+        c.setRequestProperty("Content-Type", "application/json");
+        c.setRequestProperty("Accept", "application/json");
+        c.setRequestProperty("User-Agent", userAgent());
+        if (headers != null) {
+            for (Map.Entry<String, String> e : headers.entrySet()) {
+                c.setRequestProperty(e.getKey(), e.getValue());
+            }
+        }
+        c.setDoOutput(true);
+        OutputStream os = c.getOutputStream();
+        os.write(body.toString().getBytes("UTF-8"));
+        os.close();
         return readJson(c);
     }
 
@@ -314,5 +348,135 @@ final class ApiClient {
         r.parcels = all;
         r.raw = lastRaw;
         return r;
+    }
+
+    // ------------------------------------------------------------------
+    // Avizo — extend collection time (validated against InPost Mobile 4.22.1)
+    // ------------------------------------------------------------------
+
+    static final class AvizoPrice {
+        String amount = "";
+        String currency = "";
+        long timeMinutes = 0;
+    }
+
+    static final class AvizoOrder {
+        boolean paymentRequired = false;
+        String price = "";
+        JSONObject discountData;
+    }
+
+    /** GET /v3/prices/parcels?sourceCountryCode=PL -> {@code expandAvizo{price,time}}. */
+    static AvizoPrice fetchAvizoPrice(AuthState st) throws Exception {
+        Object value = readJsonAny(openGet(
+                API_BASE + "/v3/prices/parcels?sourceCountryCode=PL", parcelHeaders(st)));
+        JSONObject avizo = extractExpandAvizo(value);
+        if (avizo == null) {
+            throw new Exception("expandAvizo price unavailable");
+        }
+        JSONObject price = avizo.optJSONObject("price");
+        AvizoPrice p = new AvizoPrice();
+        if (price != null) {
+            p.amount = price.optString("amount", "");
+            p.currency = price.optString("currency", "");
+        }
+        p.timeMinutes = avizo.optLong("time", 0);
+        return p;
+    }
+
+    /** The endpoint may return a JSON array or object depending on backend. */
+    private static JSONObject extractExpandAvizo(Object value) {
+        if (value instanceof JSONArray) {
+            JSONArray arr = (JSONArray) value;
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.optJSONObject(i);
+                if (o != null && o.optJSONObject("expandAvizo") != null) {
+                    return o.optJSONObject("expandAvizo");
+                }
+            }
+            return null;
+        }
+        if (value instanceof JSONObject) {
+            JSONObject o = (JSONObject) value;
+            JSONObject a = o.optJSONObject("expandAvizo");
+            if (a != null) {
+                return a;
+            }
+            JSONArray countries = o.optJSONArray("countries");
+            if (countries != null) {
+                for (int i = 0; i < countries.length(); i++) {
+                    JSONObject co = countries.optJSONObject(i);
+                    if (co != null && co.optJSONObject("expandAvizo") != null) {
+                        return co.optJSONObject("expandAvizo");
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /** POST /v1/orders/expand-avizo. */
+    static AvizoOrder createExpandAvizoOrder(AuthState st, String shipmentNumber,
+            String regularPrice, long expandAvizoTimeMinutes, JSONObject discountData)
+            throws Exception {
+        JSONObject body = new JSONObject();
+        body.put("shipmentNumber", shipmentNumber);
+        if (discountData != null) {
+            body.put("discountData", discountData);
+        }
+        body.put("expandAvizoTime", expandAvizoTimeMinutes);
+        body.put("regularPrice", regularPrice);
+        JSONObject o = postJson(API_BASE + "/v1/orders/expand-avizo", parcelHeaders(st), body);
+        AvizoOrder r = new AvizoOrder();
+        r.paymentRequired = o.optBoolean("paymentRequired", false);
+        r.price = o.optString("regularPrice", regularPrice);
+        r.discountData = o.optJSONObject("discountData");
+        return r;
+    }
+
+    /** POST /v1/payments/transactions/create/blik -> transactionId. */
+    static String createBlikTransaction(AuthState st, String shipmentNumber, String amount,
+            String currency, String blikCode, long expandAvizoTimeMinutes) throws Exception {
+        JSONObject details = new JSONObject();
+        details.put("expandAvizoTime", expandAvizoTimeMinutes);
+
+        JSONObject body = new JSONObject();
+        body.put("shipmentNumber", shipmentNumber);
+        body.put("amount", amount);
+        body.put("currency", currency);
+        body.put("process", "AVIZO");
+        body.put("paymentMethod", "CODE");
+        body.put("blikCode", blikCode);
+        body.put("details", details);
+        JSONObject o = postJson(
+                API_BASE + "/v1/payments/transactions/create/blik", parcelHeaders(st), body);
+        return o.optString("transactionId", "");
+    }
+
+    /** POST /v1/payments/transactions/cancel. */
+    static void cancelTransaction(AuthState st, String transactionId) throws Exception {
+        JSONObject body = new JSONObject();
+        body.put("transactionId", transactionId);
+        postJson(API_BASE + "/v1/payments/transactions/cancel", parcelHeaders(st), body);
+    }
+
+    /** Reads {@code avizoTransactionStatus} for one shipment from /v4/parcels/tracked. */
+    static String fetchAvizoStatus(AuthState st, String shipmentNumber) throws Exception {
+        JSONObject o = getJson(API_BASE + "/v4/parcels/tracked", parcelHeaders(st));
+        JSONArray a = o.optJSONArray("parcels");
+        if (a == null) {
+            return "";
+        }
+        for (int i = 0; i < a.length(); i++) {
+            JSONObject p = a.optJSONObject(i);
+            if (p == null) {
+                continue;
+            }
+            String n = p.optString("shipmentNumber", p.optString("primaryParcelNumber", ""));
+            if (shipmentNumber.equals(n)) {
+                return p.optString("avizoTransactionStatus", "");
+            }
+        }
+        return "";
     }
 }

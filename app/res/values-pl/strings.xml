@@ -143,6 +143,29 @@
     <string name="status_group_undelivered">paczka niedostarczona</string>
     <string name="status_group_claimed">paczka w reklamacji</string>
 
+    <!-- Przedłużenie czasu odbioru (avizo) -->
+    <string name="avizo_title">Przedłuż czas odbioru</string>
+    <string name="avizo_parcel">Paczka %1$s</string>
+    <string name="avizo_preparing">Przygotowywanie…</string>
+    <string name="avizo_price">Cena: %1$s %2$s</string>
+    <string name="avizo_extension_minutes">Przedłuża odbiór o %1$d min</string>
+    <string name="avizo_extension_hours">Przedłuża odbiór o %1$d godz.</string>
+    <string name="avizo_blik_hint">6-cyfrowy kod z aplikacji banku</string>
+    <string name="avizo_pay">Zapłać BLIK-iem</string>
+    <string name="avizo_agreement">Płacąc akceptujesz regulamin operatora płatności.</string>
+    <string name="avizo_cancel">Anuluj płatność</string>
+    <string name="avizo_free_done">Czas odbioru został przedłużony.</string>
+    <string name="avizo_in_progress">Płatność w trakcie…</string>
+    <string name="avizo_success">Płatność zaakceptowana. Czas odbioru przedłużony.</string>
+    <string name="avizo_rejected">Płatność odrzucona.</string>
+    <string name="avizo_cancelled">Płatność anulowana.</string>
+    <string name="avizo_timeout">Płatność niepotwierdzona. Sprawdź status przesyłki później.</string>
+    <string name="avizo_invalid_code">Wpisz 6-cyfrowy kod BLIK.</string>
+    <string name="avizo_not_available">Przedłużenie czasu odbioru nie jest dostępne dla tej przesyłki.</string>
+    <string name="avizo_error">Błąd: %1$s</string>
+
+    <string name="detail_label_time_left">Pozostały czas do odbioru</string>
+    <string name="detail_extend_short">Przedłuż odbiór</string>
     <!-- Ustawienia -->
     <string name="settings_language">Język</string>
     <string name="settings_language_description">Wybierz język aplikacji. Zmiana jest stosowana natychmiast.</string>

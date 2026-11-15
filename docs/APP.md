@@ -126,6 +126,40 @@ which shows:
 QR generation uses the ZXing core jar installed by `bootstrap.sh` into
 `libs/`; no network is involved.
 
+## Extending collection time (avizo)
+
+Simplified mode's parcel detail view has a **Time left to pickup** block right
+after **Status** (`expiryDate` as local date/time plus the remaining time).
+
+When the backend marks a parcel with `operations.expandAvizo = true` and its
+`avizoTransactionStatus` is not in progress (`NONE` / `REJECTED` / absent), the
+parcel detail view shows a short **Extend pickup** button (no question text) —
+in simplified mode directly under the time-left block, in normal mode before
+the JSON.
+The **MULTISKRYTKA** group view (`MultiCompartmentActivity`) shows the same
+**Time left to pickup** block (earliest `expiryDate` among its members) and
+**Extend pickup** button between the QR code and the pickup-point block.
+
+It opens `AvizoActivity`, which follows the same flow as the official app
+(validated against InPost Mobile 4.22.1):
+
+1. `GET /v3/prices/parcels?sourceCountryCode=PL` →
+   `expandAvizo { price { amount, currency }, time }`.
+2. `POST /v1/orders/expand-avizo` with
+   `{ shipmentNumber, expandAvizoTime, regularPrice }` →
+   `{ paymentRequired, regularPrice, discountData }`. If `paymentRequired` is
+   false the extension is already applied.
+3. `POST /v1/payments/transactions/create/blik` with
+   `{ shipmentNumber, amount, currency, process: "AVIZO", paymentMethod: "CODE",
+   blikCode, details: { expandAvizoTime } }` → `{ transactionId }`.
+4. Polls `GET /v4/parcels/tracked` until `avizoTransactionStatus` becomes
+   `COMPLETED` or `REJECTED`.
+
+All calls reuse the parcel API headers (`Authorization`, `X-App-Id`,
+`device-uid`, …) against `https://api-inmobile-pl.easypack24.net`. The user
+types the 6-digit BLIK code from their banking app; `POST
+/v1/payments/transactions/cancel` aborts a payment in progress.
+
 ## UI
 
 - **Main view:** a top bar with a burger button (`≡`) on the left and the
@@ -266,11 +300,12 @@ app/res/values/strings.xml                  app name
 app/src/com/openpostmobajl/MainActivity.java              UI, WebView, orchestration
 app/src/com/openpostmobajl/ParcelDetailActivity.java      full parcel view + QR code
 app/src/com/openpostmobajl/MultiCompartmentActivity.java  multicompartment group + QR code
+app/src/com/openpostmobajl/AvizoActivity.java             extend collection time + BLIK
 app/src/com/openpostmobajl/ParcelUi.java                  list helpers + grouping
 app/src/com/openpostmobajl/ParcelEntry.java               list row (single or group)
 app/src/com/openpostmobajl/ParcelCache.java               parcels.json cache
 app/src/com/openpostmobajl/Pkce.java                      OAuth constants + PKCE
-app/src/com/openpostmobajl/ApiClient.java                 token exchange/refresh + parcels
+app/src/com/openpostmobajl/ApiClient.java                 token exchange/refresh + parcels + avizo
 app/src/com/openpostmobajl/AuthStore.java                 encrypted auth.json read/write
 app/src/com/openpostmobajl/AuthState.java                 state fields
 app/src/com/openpostmobajl/SecureStore.java               Android Keystore AES-GCM helper

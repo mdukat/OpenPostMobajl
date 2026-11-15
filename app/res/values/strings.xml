@@ -140,6 +140,29 @@
     <string name="status_group_undelivered">parcel not delivered</string>
     <string name="status_group_claimed">parcel claimed</string>
 
+    <!-- Extend collection time (avizo) -->
+    <string name="avizo_title">Extend collection time</string>
+    <string name="avizo_parcel">Parcel %1$s</string>
+    <string name="avizo_preparing">Preparing…</string>
+    <string name="avizo_price">Price: %1$s %2$s</string>
+    <string name="avizo_extension_minutes">Extends collection by %1$d min</string>
+    <string name="avizo_extension_hours">Extends collection by %1$d h</string>
+    <string name="avizo_blik_hint">6-digit code from your banking app</string>
+    <string name="avizo_pay">Pay with BLIK</string>
+    <string name="avizo_agreement">By paying you accept the payment provider\'s terms.</string>
+    <string name="avizo_cancel">Cancel payment</string>
+    <string name="avizo_free_done">Collection time extended.</string>
+    <string name="avizo_in_progress">Payment in progress…</string>
+    <string name="avizo_success">Payment accepted. Collection time extended.</string>
+    <string name="avizo_rejected">Payment rejected.</string>
+    <string name="avizo_cancelled">Payment cancelled.</string>
+    <string name="avizo_timeout">Payment not confirmed yet. Check the parcel status later.</string>
+    <string name="avizo_invalid_code">Enter the 6-digit BLIK code.</string>
+    <string name="avizo_not_available">Extending collection time is not available for this parcel.</string>
+    <string name="avizo_error">Error: %1$s</string>
+
+    <string name="detail_label_time_left">Time left to pickup</string>
+    <string name="detail_extend_short">Extend pickup</string>
     <!-- Settings -->
     <string name="settings_language">Language</string>
     <string name="settings_language_description">Choose the app language. The change is applied immediately.</string>
