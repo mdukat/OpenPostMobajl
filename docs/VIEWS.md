@@ -10,7 +10,7 @@ plain `android.widget` views. Read [Conventions](#conventions) and
 [Adding a new view](#adding-a-new-view) before writing code.
 
 Line numbers below are approximate and will drift; method names are the stable
-reference. Version noted here: **1.2** (`versionCode` 3).
+reference. Version noted here: **1.3** (`versionCode` 4).
 
 ---
 
@@ -42,6 +42,7 @@ as an overlay on top of the list.
 | `MainActivity` | `MainActivity.java` | Launcher. Login WebView + parcel list + sidebar. | — |
 | `ParcelDetailActivity` | `ParcelDetailActivity.java` | One parcel: QR, summary, full JSON. | `parcel` = single JSON object string |
 | `MultiCompartmentActivity` | `MultiCompartmentActivity.java` | A "MULTISKRYTKA" group: one QR + member list. | `parcels` = JSON array string, `uuid` = group uuid |
+| `AvizoActivity` | `AvizoActivity.java` | Extend collection time: price, BLIK payment, status. | `parcel` = single JSON object string |
 | `SettingsActivity` | `SettingsActivity.java` | Language picker; applies immediately. | — |
 | `DeliveredParcelsActivity` | `DeliveredParcelsActivity.java` | Delivered parcels from the cache only (no network). | — |
 | `QrFullscreenActivity` | `QrFullscreenActivity.java` | Fullscreen QR at max brightness; tap to close. | `qr` = payload string |
@@ -151,14 +152,36 @@ Shows one parcel. In `onCreate`:
 - Summary: normally shipment number, status + status group, pickup point and
   sender in one `TextView`; in **simplified mode** separate labeled blocks
   (`addBlock`) for sender (first, below the QR code), pickup code
-  (`ParcelUi.pickupCode`), parcel number, translated status and pickup-point
-  details. When **Pickup point photo** is enabled, `PickupImageLoader` appends
-  the `pickUpPoint.imageUrl` image under that block (or nothing on failure).
+  (`ParcelUi.pickupCode`), parcel number, translated status, **Time left to
+  pickup** (right after status, from `expiryDate` date/time + remaining time)
+  and pickup-point details. When **Pickup point photo** is enabled,
+  `PickupImageLoader` appends the `pickUpPoint.imageUrl` image under the
+  pickup-point block (or nothing on failure).
+- **Extend pickup** button → `AvizoActivity`, rendered by `addExtendButton`
+  when `operations.expandAvizo` is set and no avizo payment is in progress (in
+  simplified mode directly under the time-left block, in normal mode before the
+  JSON).
 - Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
   (hidden in simplified mode).
 
 Parses the `parcel` extra with `new JSONObject(...)`; malformed input shows
 "Could not read parcel data." instead of crashing.
+
+### `AvizoActivity`
+
+File: `app/src/com/openpostmobajl/AvizoActivity.java`
+
+Opened from the parcel detail view's **Extend pickup** button (shown when
+`operations.expandAvizo` is true and `avizoTransactionStatus` is
+`NONE`/`REJECTED`/absent). `onCreate` loads `AuthState`, then off the UI thread:
+`ApiClient.fetchAvizoPrice` (`GET /v3/prices/parcels`),
+`createExpandAvizoOrder` (`POST /v1/orders/expand-avizo`) and — when
+`paymentRequired` — a 6-digit BLIK code + `createBlikTransaction`
+(`POST /v1/payments/transactions/create/blik`). It then polls
+`fetchAvizoStatus` (`GET /v4/parcels/tracked`) every 3 s until
+`avizoTransactionStatus` is `COMPLETED`/`REJECTED` (≈2 min timeout).
+`cancelPayment` calls `POST /v1/payments/transactions/cancel`. Extends
+`BaseActivity`.
 
 ### `MultiCompartmentActivity`
 
@@ -173,9 +196,13 @@ in scan order) and `uuid`. In `onCreate`:
   rendered only if that parcel has a non-empty `qrCode`; tap opens
   `QrFullscreenActivity`. In simplified mode the "QR code" label and the raw
   payload are hidden and the "tap to open full screen" hint is shown instead.
+- **Time left to pickup** block (`Ui.addBlock`, earliest `expiryDate` among the
+  members) and, when a member offers avizo (`ParcelUi.canExtendAvizo`), the
+  short **Extend pickup** button directly under it — between the QR code and
+  the pickup-point block.
 - Pickup-point block (`Ui.addBlock` with the same `ParcelUi.pickupDetails` data
   as the parcel detail view) and, when the **Pickup point photo** setting is
-  on, the `PickupImageLoader` image — both between the QR code and the list.
+  on, the `PickupImageLoader` image — between the time-left block and the list.
 - A "N parcels" label.
 - Each contained parcel as a `ParcelUi.rowText` row; tapping opens
   `ParcelDetailActivity` with that parcel's JSON.
@@ -377,7 +404,7 @@ simplified-mode list rows, and `Ui.addBlock` (small gray label + value) used by
 | delivered list contents | `DeliveredParcelsActivity.onCreate` |
 | sidebar entries | `MainActivity.buildPanel` |
 | list rendering / navigation | `MainActivity.render` |
-| app version | `app/AndroidManifest.xml` + `VERSION_CODE`/`VERSION_NAME` in both build scripts (currently 1.2 / 3) |
+| app version | `app/AndroidManifest.xml` + `VERSION_CODE`/`VERSION_NAME` in both build scripts (currently 1.3 / 4) |
 | theme of a screen | its `<activity>` in `app/AndroidManifest.xml` |
 
 ---

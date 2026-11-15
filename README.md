@@ -153,7 +153,7 @@ git-ignored.
 Version overrides:
 
 ```sh
-VERSION_CODE=3 VERSION_NAME=1.2 ./build-release.sh
+VERSION_CODE=4 VERSION_NAME=1.3 ./build-release.sh
 ```
 
 ## Install / run

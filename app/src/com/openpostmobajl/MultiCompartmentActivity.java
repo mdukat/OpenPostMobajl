@@ -143,6 +143,46 @@ public class MultiCompartmentActivity extends BaseActivity {
             }
         }
 
+        // ---- time left to pickup (below the QR code, above the pickup point) ----
+        long earliestExpiry = 0;
+        JSONObject extendable = null;
+        for (int i = 0; i < parcels.length(); i++) {
+            JSONObject p = parcels.optJSONObject(i);
+            if (p == null) {
+                continue;
+            }
+            long e = ParcelUi.parseIsoMillis(p.optString("expiryDate", ""));
+            if (e > 0 && (earliestExpiry == 0 || e < earliestExpiry)) {
+                earliestExpiry = e;
+            }
+            if (extendable == null && ParcelUi.canExtendAvizo(p)) {
+                extendable = p;
+            }
+        }
+        if (earliestExpiry > 0) {
+            Ui.addBlock(this, content, R.string.detail_label_time_left,
+                    ParcelUi.expiryText(this, earliestExpiry));
+        }
+        if (extendable != null) {
+            final String parcelJson = extendable.toString();
+            Button extend = new Button(this);
+            extend.setText(R.string.detail_extend_short);
+            extend.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(
+                            MultiCompartmentActivity.this, AvizoActivity.class);
+                    intent.putExtra("parcel", parcelJson);
+                    startActivity(intent);
+                }
+            });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.topMargin = dp(8);
+            content.addView(extend, lp);
+        }
+
         // ---- pickup point (same data as the parcel detail view) ----
         if (first != null) {
             String pickup = ParcelUi.pickupDetails(first);
