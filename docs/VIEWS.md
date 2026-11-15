@@ -10,7 +10,7 @@ plain `android.widget` views. Read [Conventions](#conventions) and
 [Adding a new view](#adding-a-new-view) before writing code.
 
 Line numbers below are approximate and will drift; method names are the stable
-reference. Version noted here: **1.2** (`versionCode` 3).
+reference. Version noted here: **1.3** (`versionCode` 4).
 
 ---
 
@@ -404,7 +404,7 @@ simplified-mode list rows, and `Ui.addBlock` (small gray label + value) used by
 | delivered list contents | `DeliveredParcelsActivity.onCreate` |
 | sidebar entries | `MainActivity.buildPanel` |
 | list rendering / navigation | `MainActivity.render` |
-| app version | `app/AndroidManifest.xml` + `VERSION_CODE`/`VERSION_NAME` in both build scripts (currently 1.2 / 3) |
+| app version | `app/AndroidManifest.xml` + `VERSION_CODE`/`VERSION_NAME` in both build scripts (currently 1.3 / 4) |
 | theme of a screen | its `<activity>` in `app/AndroidManifest.xml` |
 
 ---
