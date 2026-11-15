@@ -141,8 +141,6 @@
     <string name="status_group_claimed">parcel claimed</string>
 
     <!-- Extend collection time (avizo) -->
-    <string name="detail_extend_avizo">Need more time to collect your parcel?</string>
-    <string name="detail_extend_avizo_button">Extend collection time</string>
     <string name="avizo_title">Extend collection time</string>
     <string name="avizo_parcel">Parcel %1$s</string>
     <string name="avizo_preparing">Preparing…</string>
@@ -163,6 +161,8 @@
     <string name="avizo_not_available">Extending collection time is not available for this parcel.</string>
     <string name="avizo_error">Error: %1$s</string>
 
+    <string name="detail_label_time_left">Time left to pickup</string>
+    <string name="detail_extend_short">Extend pickup</string>
     <!-- Settings -->
     <string name="settings_language">Language</string>
     <string name="settings_language_description">Choose the app language. The change is applied immediately.</string>

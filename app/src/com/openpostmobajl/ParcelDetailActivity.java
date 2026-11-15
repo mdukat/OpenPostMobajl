@@ -157,10 +157,18 @@ public class ParcelDetailActivity extends BaseActivity {
                 Ui.addBlock(this, content, R.string.detail_label_number, number);
                 Ui.addBlock(this, content, R.string.detail_label_status,
                         ParcelUi.statusText(this, status, group));
+                long expiryMillis = ParcelUi.parseIsoMillis(parcel.optString("expiryDate", ""));
+                if (expiryMillis > 0) {
+                    Ui.addBlock(this, content, R.string.detail_label_time_left,
+                            ParcelUi.expiryText(this, expiryMillis));
+                }
                 Ui.addBlock(this, content, R.string.detail_label_pickup_point,
                         pickup.length() == 0 ? ParcelUi.pointName(parcel) : pickup);
                 if (AppSettings.isPickupImageEnabled(this)) {
                     PickupImageLoader.loadInto(this, content, ParcelUi.pickupImageUrl(parcel));
+                }
+                if (ParcelUi.canExtendAvizo(parcel)) {
+                    addExtendButton(content, parcel);
                 }
             } else {
                 TextView summary = new TextView(this);
@@ -175,10 +183,10 @@ public class ParcelDetailActivity extends BaseActivity {
                 content.addView(summary, new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT));
+                if (ParcelUi.canExtendAvizo(parcel)) {
+                    addExtendButton(content, parcel);
+                }
             }
-
-            // ---- extend collection time (avizo) ----
-            addExtendAvizo(content, parcel);
 
             // ---- full JSON (hidden in simplified mode) ----
             if (!simplified) {
@@ -213,26 +221,11 @@ public class ParcelDetailActivity extends BaseActivity {
         setContentView(root);
     }
 
-    /**
-     * Shows the "Extend collection time" button when the parcel is eligible for
-     * avizo ({@link ParcelUi#canExtendAvizo}).
-     */
-    private void addExtendAvizo(LinearLayout content, JSONObject parcel) {
-        if (!ParcelUi.canExtendAvizo(parcel)) {
-            return;
-        }
-
-        TextView hint = new TextView(this);
-        hint.setText(R.string.detail_extend_avizo);
-        hint.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
-        hint.setPadding(0, dp(12), 0, dp(4));
-        content.addView(hint, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
+    /** Simple "Extend pickup" button that opens the avizo (BLIK) flow. */
+    private void addExtendButton(LinearLayout content, JSONObject parcel) {
         final String parcelJson = parcel.toString();
         Button extend = new Button(this);
-        extend.setText(R.string.detail_extend_avizo_button);
+        extend.setText(R.string.detail_extend_short);
         extend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -241,8 +234,10 @@ public class ParcelDetailActivity extends BaseActivity {
                 startActivity(intent);
             }
         });
-        content.addView(extend, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = dp(8);
+        content.addView(extend, lp);
     }
 
     private int dp(int value) {

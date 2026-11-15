@@ -144,8 +144,6 @@
     <string name="status_group_claimed">paczka w reklamacji</string>
 
     <!-- Przedłużenie czasu odbioru (avizo) -->
-    <string name="detail_extend_avizo">Potrzebujesz więcej czasu na odbiór przesyłki?</string>
-    <string name="detail_extend_avizo_button">Przedłuż czas odbioru</string>
     <string name="avizo_title">Przedłuż czas odbioru</string>
     <string name="avizo_parcel">Paczka %1$s</string>
     <string name="avizo_preparing">Przygotowywanie…</string>
@@ -166,6 +164,8 @@
     <string name="avizo_not_available">Przedłużenie czasu odbioru nie jest dostępne dla tej przesyłki.</string>
     <string name="avizo_error">Błąd: %1$s</string>
 
+    <string name="detail_label_time_left">Pozostały czas do odbioru</string>
+    <string name="detail_extend_short">Przedłuż odbiór</string>
     <!-- Ustawienia -->
     <string name="settings_language">Język</string>
     <string name="settings_language_description">Wybierz język aplikacji. Zmiana jest stosowana natychmiast.</string>

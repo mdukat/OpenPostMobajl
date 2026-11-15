@@ -152,12 +152,14 @@ Shows one parcel. In `onCreate`:
 - Summary: normally shipment number, status + status group, pickup point and
   sender in one `TextView`; in **simplified mode** separate labeled blocks
   (`addBlock`) for sender (first, below the QR code), pickup code
-  (`ParcelUi.pickupCode`), parcel number, translated status and pickup-point
-  details.
-- **Extend collection time** button (both modes) → `AvizoActivity`, rendered by
-  `addExtendAvizo` when `operations.expandAvizo` is set and no avizo payment is
-  in progress. When **Pickup point photo** is enabled, `PickupImageLoader` appends
-  the `pickUpPoint.imageUrl` image under that block (or nothing on failure).
+  (`ParcelUi.pickupCode`), parcel number, translated status, **Time left to
+  pickup** (right after status, from `expiryDate` date/time + remaining time)
+  and pickup-point details. When **Pickup point photo** is enabled,
+  `PickupImageLoader` appends the `pickUpPoint.imageUrl` image under the
+  pickup-point block (or nothing on failure).
+- **Extend pickup** button → `AvizoActivity`, rendered by `addExtendButton`
+  when `operations.expandAvizo` is set and no avizo payment is in progress (in
+  simplified mode below the time-left block, in normal mode before the JSON).
 - Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
   (hidden in simplified mode).
 
@@ -168,8 +170,8 @@ Parses the `parcel` extra with `new JSONObject(...)`; malformed input shows
 
 File: `app/src/com/openpostmobajl/AvizoActivity.java`
 
-Opened from the parcel detail view's **Extend collection time** button (shown
-when `operations.expandAvizo` is true and `avizoTransactionStatus` is
+Opened from the parcel detail view's **Extend pickup** button (shown when
+`operations.expandAvizo` is true and `avizoTransactionStatus` is
 `NONE`/`REJECTED`/absent). `onCreate` loads `AuthState`, then off the UI thread:
 `ApiClient.fetchAvizoPrice` (`GET /v3/prices/parcels`),
 `createExpandAvizoOrder` (`POST /v1/orders/expand-avizo`) and — when

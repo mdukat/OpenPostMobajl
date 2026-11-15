@@ -128,11 +128,16 @@ QR generation uses the ZXing core jar installed by `bootstrap.sh` into
 
 ## Extending collection time (avizo)
 
+Simplified mode's parcel detail view has a **Time left to pickup** block right
+after **Status** (`expiryDate` as local date/time plus the remaining time).
+
 When the backend marks a parcel with `operations.expandAvizo = true` and its
 `avizoTransactionStatus` is not in progress (`NONE` / `REJECTED` / absent), the
-parcel detail view shows **Extend collection time** — in both normal and
-simplified mode. It opens `AvizoActivity`, which follows the same flow as the
-official app (validated against InPost Mobile 4.22.1):
+parcel detail view shows a short **Extend pickup** button (no question text) —
+in simplified mode at the bottom of the detail blocks, in normal mode before
+the JSON.
+It opens `AvizoActivity`, which follows the same flow as the official app
+(validated against InPost Mobile 4.22.1):
 
 1. `GET /v3/prices/parcels?sourceCountryCode=PL` →
    `expandAvizo { price { amount, currency }, time }`.

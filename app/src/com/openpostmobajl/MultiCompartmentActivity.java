@@ -167,18 +167,9 @@ public class MultiCompartmentActivity extends BaseActivity {
             }
         }
         if (extendable != null) {
-            TextView hint = new TextView(this);
-            hint.setText(R.string.detail_extend_avizo);
-            hint.setTextColor(Color.rgb(0x11, 0x11, 0x11));
-            hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
-            hint.setPadding(0, dp(12), 0, dp(4));
-            content.addView(hint, new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-
             final String parcelJson = extendable.toString();
             Button extend = new Button(this);
-            extend.setText(R.string.detail_extend_avizo_button);
+            extend.setText(R.string.detail_extend_short);
             extend.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -188,9 +179,11 @@ public class MultiCompartmentActivity extends BaseActivity {
                     startActivity(intent);
                 }
             });
-            content.addView(extend, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.topMargin = dp(8);
+            content.addView(extend, lp);
         }
 
         // ---- contained parcels ----
