@@ -162,13 +162,13 @@ public class ParcelDetailActivity extends BaseActivity {
                     Ui.addBlock(this, content, R.string.detail_label_time_left,
                             ParcelUi.expiryText(this, expiryMillis));
                 }
+                if (ParcelUi.canExtendAvizo(parcel)) {
+                    addExtendButton(content, parcel);
+                }
                 Ui.addBlock(this, content, R.string.detail_label_pickup_point,
                         pickup.length() == 0 ? ParcelUi.pointName(parcel) : pickup);
                 if (AppSettings.isPickupImageEnabled(this)) {
                     PickupImageLoader.loadInto(this, content, ParcelUi.pickupImageUrl(parcel));
-                }
-                if (ParcelUi.canExtendAvizo(parcel)) {
-                    addExtendButton(content, parcel);
                 }
             } else {
                 TextView summary = new TextView(this);

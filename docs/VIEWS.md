@@ -159,7 +159,8 @@ Shows one parcel. In `onCreate`:
   pickup-point block (or nothing on failure).
 - **Extend pickup** button → `AvizoActivity`, rendered by `addExtendButton`
   when `operations.expandAvizo` is set and no avizo payment is in progress (in
-  simplified mode below the time-left block, in normal mode before the JSON).
+  simplified mode directly under the time-left block, in normal mode before the
+  JSON).
 - Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
   (hidden in simplified mode).
 

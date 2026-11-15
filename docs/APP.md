@@ -134,7 +134,7 @@ after **Status** (`expiryDate` as local date/time plus the remaining time).
 When the backend marks a parcel with `operations.expandAvizo = true` and its
 `avizoTransactionStatus` is not in progress (`NONE` / `REJECTED` / absent), the
 parcel detail view shows a short **Extend pickup** button (no question text) —
-in simplified mode at the bottom of the detail blocks, in normal mode before
+in simplified mode directly under the time-left block, in normal mode before
 the JSON.
 It opens `AvizoActivity`, which follows the same flow as the official app
 (validated against InPost Mobile 4.22.1):
