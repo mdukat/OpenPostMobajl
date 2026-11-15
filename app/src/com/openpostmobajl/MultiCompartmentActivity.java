@@ -157,6 +157,42 @@ public class MultiCompartmentActivity extends BaseActivity {
             }
         }
 
+        // ---- extend collection time (avizo) ----
+        JSONObject extendable = null;
+        for (int i = 0; i < parcels.length(); i++) {
+            JSONObject p = parcels.optJSONObject(i);
+            if (p != null && ParcelUi.canExtendAvizo(p)) {
+                extendable = p;
+                break;
+            }
+        }
+        if (extendable != null) {
+            TextView hint = new TextView(this);
+            hint.setText(R.string.detail_extend_avizo);
+            hint.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+            hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+            hint.setPadding(0, dp(12), 0, dp(4));
+            content.addView(hint, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            final String parcelJson = extendable.toString();
+            Button extend = new Button(this);
+            extend.setText(R.string.detail_extend_avizo_button);
+            extend.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(
+                            MultiCompartmentActivity.this, AvizoActivity.class);
+                    intent.putExtra("parcel", parcelJson);
+                    startActivity(intent);
+                }
+            });
+            content.addView(extend, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+
         // ---- contained parcels ----
         TextView section = new TextView(this);
         section.setText(getResources().getQuantityString(

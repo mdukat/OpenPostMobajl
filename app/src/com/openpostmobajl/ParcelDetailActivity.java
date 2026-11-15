@@ -177,6 +177,9 @@ public class ParcelDetailActivity extends BaseActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT));
             }
 
+            // ---- extend collection time (avizo) ----
+            addExtendAvizo(content, parcel);
+
             // ---- full JSON (hidden in simplified mode) ----
             if (!simplified) {
                 View divider = new View(this);
@@ -208,6 +211,38 @@ public class ParcelDetailActivity extends BaseActivity {
         root.addView(scroll, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(root);
+    }
+
+    /**
+     * Shows the "Extend collection time" button when the parcel is eligible for
+     * avizo ({@link ParcelUi#canExtendAvizo}).
+     */
+    private void addExtendAvizo(LinearLayout content, JSONObject parcel) {
+        if (!ParcelUi.canExtendAvizo(parcel)) {
+            return;
+        }
+
+        TextView hint = new TextView(this);
+        hint.setText(R.string.detail_extend_avizo);
+        hint.setTextColor(Color.rgb(0x11, 0x11, 0x11));
+        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+        hint.setPadding(0, dp(12), 0, dp(4));
+        content.addView(hint, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        final String parcelJson = parcel.toString();
+        Button extend = new Button(this);
+        extend.setText(R.string.detail_extend_avizo_button);
+        extend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ParcelDetailActivity.this, AvizoActivity.class);
+                intent.putExtra("parcel", parcelJson);
+                startActivity(intent);
+            }
+        });
+        content.addView(extend, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     private int dp(int value) {

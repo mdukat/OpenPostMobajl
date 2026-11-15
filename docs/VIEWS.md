@@ -42,6 +42,7 @@ as an overlay on top of the list.
 | `MainActivity` | `MainActivity.java` | Launcher. Login WebView + parcel list + sidebar. | — |
 | `ParcelDetailActivity` | `ParcelDetailActivity.java` | One parcel: QR, summary, full JSON. | `parcel` = single JSON object string |
 | `MultiCompartmentActivity` | `MultiCompartmentActivity.java` | A "MULTISKRYTKA" group: one QR + member list. | `parcels` = JSON array string, `uuid` = group uuid |
+| `AvizoActivity` | `AvizoActivity.java` | Extend collection time: price, BLIK payment, status. | `parcel` = single JSON object string |
 | `SettingsActivity` | `SettingsActivity.java` | Language picker; applies immediately. | — |
 | `DeliveredParcelsActivity` | `DeliveredParcelsActivity.java` | Delivered parcels from the cache only (no network). | — |
 | `QrFullscreenActivity` | `QrFullscreenActivity.java` | Fullscreen QR at max brightness; tap to close. | `qr` = payload string |
@@ -152,13 +153,32 @@ Shows one parcel. In `onCreate`:
   sender in one `TextView`; in **simplified mode** separate labeled blocks
   (`addBlock`) for sender (first, below the QR code), pickup code
   (`ParcelUi.pickupCode`), parcel number, translated status and pickup-point
-  details. When **Pickup point photo** is enabled, `PickupImageLoader` appends
+  details.
+- **Extend collection time** button (both modes) → `AvizoActivity`, rendered by
+  `addExtendAvizo` when `operations.expandAvizo` is set and no avizo payment is
+  in progress. When **Pickup point photo** is enabled, `PickupImageLoader` appends
   the `pickUpPoint.imageUrl` image under that block (or nothing on failure).
 - Full JSON: `parcel.toString(2)` in a monospace, selectable `TextView`
   (hidden in simplified mode).
 
 Parses the `parcel` extra with `new JSONObject(...)`; malformed input shows
 "Could not read parcel data." instead of crashing.
+
+### `AvizoActivity`
+
+File: `app/src/com/openpostmobajl/AvizoActivity.java`
+
+Opened from the parcel detail view's **Extend collection time** button (shown
+when `operations.expandAvizo` is true and `avizoTransactionStatus` is
+`NONE`/`REJECTED`/absent). `onCreate` loads `AuthState`, then off the UI thread:
+`ApiClient.fetchAvizoPrice` (`GET /v3/prices/parcels`),
+`createExpandAvizoOrder` (`POST /v1/orders/expand-avizo`) and — when
+`paymentRequired` — a 6-digit BLIK code + `createBlikTransaction`
+(`POST /v1/payments/transactions/create/blik`). It then polls
+`fetchAvizoStatus` (`GET /v4/parcels/tracked`) every 3 s until
+`avizoTransactionStatus` is `COMPLETED`/`REJECTED` (≈2 min timeout).
+`cancelPayment` calls `POST /v1/payments/transactions/cancel`. Extends
+`BaseActivity`.
 
 ### `MultiCompartmentActivity`
 

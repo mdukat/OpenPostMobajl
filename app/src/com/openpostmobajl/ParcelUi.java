@@ -323,6 +323,22 @@ final class ParcelUi {
         return parseIsoMillis(p.optString("expiryDate", ""));
     }
 
+    /**
+     * True when the parcel carries {@code operations.expandAvizo = true} and no
+     * avizo payment is already in progress (matches InPost's
+     * {@code Shipment.isExtendAvizoVisible}).
+     */
+    static boolean canExtendAvizo(JSONObject p) {
+        JSONObject operations = p.optJSONObject("operations");
+        if (operations == null || !operations.optBoolean("expandAvizo", false)) {
+            return false;
+        }
+        String status = p.optString("avizoTransactionStatus", "");
+        return status.length() == 0
+                || "NONE".equalsIgnoreCase(status)
+                || "REJECTED".equalsIgnoreCase(status);
+    }
+
     /** Epoch millis of a parcel's {@code storedDate}, or 0 if absent/invalid. */
     static long storedMillis(JSONObject p) {
         return parseIsoMillis(p.optString("storedDate", ""));
